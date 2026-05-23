@@ -1,0 +1,2036 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0,maximum-scale=1.0,user-scalable=no,viewport-fit=cover">
+<title>Marketing Planner</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600;700&family=DM+Serif+Display&display=swap" rel="stylesheet">
+<style>
+/* Fallback if Google Fonts fails */
+body { font-family: 'DM Sans', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; }
+</style>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+:root{
+  --bg:#F7F6F2;
+  --card:#FFFFFF;
+  --card2:#F0EEE8;
+  --border:#E2DDD4;
+  --t1:#1A1814;
+  --t2:#6B6560;
+  --t3:#A09990;
+  --green:#1A6B3C;
+  --green-l:#E8F4ED;
+  --green-m:#2D9E5F;
+  --gold:#B8860B;
+  --gold-l:#FDF6E3;
+  --blue:#1A5C8A;
+  --blue-l:#E8F0F8;
+  --red:#C0392B;
+  --radius:20px;
+  --shadow:0 2px 20px rgba(26,24,20,.07);
+  --shadow-lg:0 8px 40px rgba(26,24,20,.12);
+}
+html,body{width:100%;height:100%;overflow:hidden;background:#E8E5DF;font-family:DM Sans,sans-serif;display:flex;justify-content:center;align-items:center;color:var(--t1)}
+.phone{width:393px;height:852px;background:var(--bg);border-radius:50px;overflow:hidden;display:flex;flex-direction:column;box-shadow:0 0 0 10px #D4D0C8,0 40px 120px rgba(0,0,0,.25)}
+@media(max-width:430px){body{display:block;background:var(--bg)}.phone{width:100vw;height:100vh;height:100dvh;border-radius:0;box-shadow:none}}
+
+/* LAYOUT */
+.statusbar{display:flex;justify-content:space-between;align-items:center;padding:14px 24px 8px;flex-shrink:0}
+.screens{flex:1;position:relative;overflow:hidden}
+.screen{position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;opacity:0;pointer-events:none;display:flex;flex-direction:column;transition:opacity .2s;background:var(--bg)}
+.screen::-webkit-scrollbar{display:none}
+.screen.active{opacity:1;pointer-events:all}
+
+/* NAV */
+.nav{display:flex;flex-shrink:0;background:var(--card);border-top:1px solid var(--border);padding-bottom:env(safe-area-inset-bottom)}
+.ni{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px 4px;cursor:pointer}
+.ni svg{width:22px;height:22px;stroke:var(--t3);fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;transition:stroke .2s}
+.ni span{font-size:10px;font-weight:500;color:var(--t3);transition:color .2s;letter-spacing:.2px}
+.ni.active svg{stroke:var(--green)}.ni.active span{color:var(--green)}
+
+/* TOAST */
+.toast{position:fixed;bottom:100px;left:50%;transform:translateX(-50%) translateY(8px);background:var(--t1);color:#fff;font-size:13px;font-weight:500;padding:10px 20px;border-radius:50px;opacity:0;pointer-events:none;transition:all .25s;white-space:nowrap;z-index:9999}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+
+/* SHEET */
+.overlay{position:fixed;inset:0;background:rgba(26,24,20,.4);backdrop-filter:blur(8px);z-index:100;display:flex;align-items:flex-end;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s}
+.overlay.show{opacity:1;pointer-events:all}
+.sheet{background:var(--card);border-radius:28px 28px 0 0;border-top:1px solid var(--border);padding:0 24px 32px;width:100%;max-width:393px;transform:translateY(100%);transition:transform .38s cubic-bezier(.4,0,.2,1);max-height:90vh;overflow-y:auto}
+.overlay.show .sheet{transform:translateY(0)}
+.handle{width:40px;height:4px;background:var(--border);border-radius:4px;margin:16px auto 24px}
+
+/* INPUTS */
+.inp{width:100%;background:var(--card2);border:1.5px solid var(--border);border-radius:14px;padding:14px 16px;font-family:DM Sans,sans-serif;font-size:15px;color:var(--t1);outline:none;transition:border-color .2s;box-sizing:border-box}
+.inp::placeholder{color:var(--t3)}.inp:focus{border-color:var(--green)}
+.lbl{font-size:11px;font-weight:600;color:var(--t2);letter-spacing:.8px;text-transform:uppercase;margin-bottom:8px}
+
+/* BUTTONS */
+.btn{width:100%;padding:16px;background:var(--green);color:#fff;border:none;border-radius:16px;font-family:DM Sans,sans-serif;font-size:15px;font-weight:600;cursor:pointer;transition:opacity .2s;letter-spacing:.2px}
+.btn:active{opacity:.85}
+.btn-outline{width:100%;padding:14px;background:transparent;color:var(--t2);border:1.5px solid var(--border);border-radius:16px;font-family:DM Sans,sans-serif;font-size:15px;font-weight:500;cursor:pointer}
+.btn-gold{width:100%;padding:16px;background:var(--gold);color:#fff;border:none;border-radius:16px;font-family:DM Sans,sans-serif;font-size:15px;font-weight:600;cursor:pointer}
+
+/* MISC */
+.bk{width:40px;height:40px;background:var(--card);border:1.5px solid var(--border);border-radius:14px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0}
+.bk svg{width:18px;height:18px;stroke:var(--t1);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.hbtn{width:40px;height:40px;background:var(--card);border:1.5px solid var(--border);border-radius:14px;display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative}
+.hbtn svg{width:18px;height:18px;stroke:var(--t1);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--green-m);position:absolute;top:6px;right:6px;border:2px solid var(--card)}
+.chip{display:inline-flex;align-items:center;gap:6px;padding:6px 12px;border-radius:50px;font-size:12px;font-weight:500;cursor:pointer}
+.tag{display:inline-flex;align-items:center;padding:3px 10px;border-radius:50px;font-size:11px;font-weight:600}
+.ob-opt{display:flex;align-items:center;gap:14px;background:var(--card2);border:1.5px solid var(--border);border-radius:16px;padding:14px 16px;cursor:pointer;transition:all .18s}
+.ob-opt.sel{border-color:var(--green);background:var(--green-l)}
+.list-row{display:flex;align-items:center;gap:12px;padding:14px 20px;border-bottom:1px solid var(--border);cursor:pointer;transition:background .12s;background:var(--card)}
+.list-row:active{background:var(--card2)}
+.list-row:first-child{border-radius:16px 16px 0 0}
+.list-row:last-child{border-bottom:none;border-radius:0 0 16px 16px}
+.toggle{width:46px;height:26px;border-radius:13px;background:var(--border);position:relative;cursor:pointer;transition:background .3s;flex-shrink:0}
+.toggle::after{content:'';position:absolute;width:20px;height:20px;border-radius:50%;background:#fff;top:3px;right:3px;transition:transform .3s;box-shadow:0 1px 4px rgba(0,0,0,.15)}
+.toggle.on{background:var(--green)}.toggle.on::after{transform:translateX(-20px)}
+@keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+</style>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+// ── SUPABASE CONFIG ──
+const SUPABASE_URL = 'https://nklumqoqspypqcwqecoo.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im5rbHVtcW9xc3B5cHFjd3FlY29vIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzkxMzY0NTMsImV4cCI6MjA5NDcxMjQ1M30.Qytw3kvMgw8sXOh5cBax3KJnwKWC_StAMjY9fMDsFDw';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// ── AUTH FUNCTIONS ──
+async function signUp(email, password, userData) {
+  const { data, error } = await sb.auth.signUp({ email, password });
+  if (error) { toast('Error: ' + error.message); return null; }
+  // Save profile
+  if (data.user) {
+    await sb.from('profiles').upsert({
+      id: data.user.id,
+      email: email,
+      full_name: userData.name || '',
+      phone: userData.phone || '',
+      business_name: userData.biz || '',
+      business_type: userData.bizType || '',
+      country_code: country.code || 'SA',
+      language_code: lang || 'en'
+    });
+  }
+  return data;
+}
+
+async function signIn(email, password) {
+  const { data, error } = await sb.auth.signInWithPassword({ email, password });
+  if (error) { toast('Error: ' + error.message); return null; }
+  return data;
+}
+
+async function signOut() {
+  await sb.auth.signOut();
+  go('s-splash');
+}
+
+// ── SAVE CUSTOM EVENT ──
+async function saveCustomEvent(ev) {
+  const { data: { user } } = await sb.auth.getUser();
+  if (!user) return;
+  await sb.from('custom_events').insert({
+    user_id: user.id,
+    name: ev.name,
+    start_date: ev.date,
+    date_label: ev.dateLabel
+  });
+}
+
+// ── SAVE NOTE ──
+async function saveNote(eventName, note) {
+  const { data: { user } } = await sb.auth.getUser();
+  if (!user) return;
+  await sb.from('notes').insert({
+    user_id: user.id,
+    event_name: eventName,
+    title: note.title,
+    body: note.body || ''
+  });
+}
+
+// ── LOAD USER DATA ──
+async function loadUserData() {
+  const { data: { user } } = await sb.auth.getUser();
+  if (!user) return;
+  const { data: profile } = await sb.from('profiles').select('*').eq('id', user.id).single();
+  if (profile) {
+    userData.name = profile.full_name || '';
+    userData.email = profile.email || '';
+    userData.phone = profile.phone || '';
+    userData.biz = profile.business_name || '';
+    document.getElementById('userName').textContent = userData.name || 'User';
+    document.getElementById('profileName').textContent = userData.name || 'User';
+    document.getElementById('profileEmail').textContent = userData.email || '—';
+    document.getElementById('profilePhone').textContent = userData.phone || '—';
+    document.getElementById('profileBiz').textContent = userData.biz || '';
+  }
+  // Load custom events
+  const { data: events } = await sb.from('custom_events').select('*').eq('user_id', user.id);
+  if (events && events.length) {
+    customEvs = events.map(function(e) {
+      return { name: e.name, date: e.start_date, dateLabel: e.date_label, type: 'custom' };
+    });
+    renderTimeline();
+    renderUpcoming();
+    updateHero();
+  }
+}
+
+// Check session on load
+sb.auth.onAuthStateChange(function(event, session) {
+  if (session) {
+    loadUserData();
+    document.getElementById('mainNav').style.display = 'flex';
+    go('s-home');
+  }
+});
+</script>
+<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
+<script>
+  window.OneSignalDeferred = window.OneSignalDeferred || [];
+  OneSignalDeferred.push(async function(OneSignal) {
+    await OneSignal.init({
+      appId: "72bdd994-e083-4987-806c-280dfd31ceb0",
+      safari_web_id: "web.onesignal.auto.10d6980b-bbad-483e-b993-08fa2a289dd8",
+      notifyButton: {
+        enable: true,
+      },
+    });
+  });
+</script>
+</head>
+<body>
+<div class="phone">
+
+<!-- STATUS BAR -->
+<div class="statusbar">
+  <div id="statusTime" style="font-size:15px;font-weight:600;color:var(--t1);font-family:DM Sans,sans-serif">9:41</div>
+  <div style="display:flex;gap:6px;align-items:center">
+    <svg width="17" height="12" viewBox="0 0 17 12"><rect x="0" y="4" width="3" height="8" rx="1" fill="var(--t2)"/><rect x="4.5" y="2.5" width="3" height="9.5" rx="1" fill="var(--t2)"/><rect x="9" y="0" width="3" height="12" rx="1" fill="var(--t2)"/><rect x="13.5" y="0" width="3" height="12" rx="1" fill="var(--t3)"/></svg>
+    <svg width="16" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--t2)" stroke-width="1.8" stroke-linecap="round"><path d="M1.42 9a16 16 0 0 1 21.16 0M5 12.55a11 11 0 0 1 14.08 0M10.71 17.4l1.29 1.3 1.29-1.3a2.89 2.89 0 0 0-2.58 0z"/></svg>
+    <svg width="28" height="14" viewBox="0 0 28 14"><rect x="0" y="2" width="24" height="10" rx="2.5" stroke="var(--t2)" stroke-width="1.5" fill="none"/><rect x="1.5" y="3.5" width="18" height="7" rx="1.5" fill="var(--t2)"/><path d="M25.5 5.5v3a1.5 1.5 0 0 0 0-3z" fill="var(--t2)"/></svg>
+  </div>
+</div>
+
+<div class="screens">
+
+<!-- ══ SPLASH ══ -->
+<div class="screen active" id="s-splash">
+  <div style="flex:1;display:flex;flex-direction:column;padding:24px 28px 40px">
+    <!-- Logo -->
+    <div style="width:64px;height:64px;background:var(--green);border-radius:20px;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 32px rgba(26,107,60,.25);margin-bottom:48px">
+      <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2.5"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/><path d="M8 14h.01M12 14h.01M16 14h.01M8 18h.01M12 18h.01"/></svg>
+    </div>
+
+    <div style="flex:1">
+      <div style="font-family:'DM Serif Display',serif;font-size:38px;color:var(--t1);line-height:1.1;margin-bottom:16px">Plan your marketing moments.</div>
+      <div style="font-size:16px;color:var(--t2);line-height:1.7;max-width:280px">Know every important date. Never miss a marketing opportunity again.</div>
+    </div>
+
+    <!-- Preview cards -->
+    <div style="display:flex;flex-direction:column;gap:10px;margin-bottom:36px">
+      <div style="background:var(--card);border:1.5px solid var(--border);border-radius:18px;padding:16px;display:flex;align-items:center;gap:14px;box-shadow:var(--shadow)">
+        <div style="width:44px;height:44px;border-radius:14px;background:var(--green-l);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="1.7" stroke-linecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        </div>
+        <div style="flex:1">
+          <div style="font-size:14px;font-weight:600;color:var(--t1);margin-bottom:2px">Auto-detects your location</div>
+          <div style="font-size:12px;color:var(--t2)">Events tailored to your country</div>
+        </div>
+      </div>
+      <div style="background:var(--card);border:1.5px solid var(--border);border-radius:18px;padding:16px;display:flex;align-items:center;gap:14px;box-shadow:var(--shadow)">
+        <div style="width:44px;height:44px;border-radius:14px;background:var(--gold-l);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.7" stroke-linecap="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        </div>
+        <div style="flex:1">
+          <div style="font-size:14px;font-weight:600;color:var(--t1);margin-bottom:2px">Smart reminders</div>
+          <div style="font-size:12px;color:var(--t2)">Based on event importance</div>
+        </div>
+      </div>
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:10px">
+      <button class="btn" onclick="go('s-auth')">Get Started — It's Free</button>
+      <button class="btn-outline" onclick="go('s-auth');switchAuthTab('signin')">I already have an account</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ LANG SELECT ══ -->
+<div class="screen" id="s-lang-select">
+  <div style="padding:24px 24px 16px;flex-shrink:0">
+    <div style="font-family:'DM Serif Display',serif;font-size:28px;color:var(--t1);margin-bottom:6px">Language</div>
+    <div style="font-size:14px;color:var(--t2);margin-bottom:20px">Choose your preferred language</div>
+    <div style="background:var(--card);border:1.5px solid var(--border);border-radius:14px;padding:12px 16px;display:flex;gap:10px;align-items:center">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--t3)" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input id="langSearch" style="flex:1;background:transparent;border:none;outline:none;font-family:DM Sans,sans-serif;font-size:14px;color:var(--t1)" placeholder="Search..." oninput="renderLangList(this.value)">
+    </div>
+  </div>
+  <div style="flex:1;overflow-y:auto;padding:0 24px 24px" id="langList"></div>
+</div>
+
+<!-- ══ COUNTRY SELECT ══ -->
+<div class="screen" id="s-country-select">
+  <div style="padding:24px 24px 16px;flex-shrink:0">
+    <div style="font-family:'DM Serif Display',serif;font-size:28px;color:var(--t1);margin-bottom:6px">Country</div>
+    <div style="font-size:14px;color:var(--t2);margin-bottom:20px">We'll show events from your country</div>
+    <div style="background:var(--card);border:1.5px solid var(--border);border-radius:14px;padding:12px 16px;display:flex;gap:10px;align-items:center">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--t3)" stroke-width="1.8" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input id="countrySearch" style="flex:1;background:transparent;border:none;outline:none;font-family:DM Sans,sans-serif;font-size:14px;color:var(--t1)" placeholder="Search country..." oninput="renderCountryList(this.value)">
+    </div>
+  </div>
+  <div style="flex:1;overflow-y:auto;padding:0 24px 24px" id="countryList"></div>
+</div>
+
+<!-- ══ PERMISSIONS ══ -->
+<div class="screen" id="s-permissions">
+  <div style="flex:1;display:flex;flex-direction:column;padding:40px 28px">
+    <div style="width:72px;height:72px;background:var(--green-l);border-radius:24px;display:flex;align-items:center;justify-content:center;margin-bottom:32px">
+      <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="1.5" stroke-linecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+    </div>
+    <div style="font-family:'DM Serif Display',serif;font-size:30px;color:var(--t1);margin-bottom:12px">Quick permissions</div>
+    <div style="font-size:15px;color:var(--t2);line-height:1.7;margin-bottom:40px">We need these to give you the best experience</div>
+
+    <div style="display:flex;flex-direction:column;gap:12px;margin-bottom:auto">
+      <div style="background:var(--card);border:1.5px solid var(--border);border-radius:18px;padding:18px;display:flex;gap:14px;align-items:center">
+        <div style="width:48px;height:48px;border-radius:16px;background:var(--blue-l);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="1.5" stroke-linecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        </div>
+        <div style="flex:1">
+          <div style="font-size:15px;font-weight:600;color:var(--t1);margin-bottom:3px">Location</div>
+          <div style="font-size:13px;color:var(--t2);line-height:1.5">Auto-detect your country & local events</div>
+        </div>
+        <div id="locStatus" style="width:10px;height:10px;border-radius:50%;background:var(--border)"></div>
+      </div>
+      <div style="background:var(--card);border:1.5px solid var(--border);border-radius:18px;padding:18px;display:flex;gap:14px;align-items:center">
+        <div style="width:48px;height:48px;border-radius:16px;background:var(--gold-l);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.5" stroke-linecap="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        </div>
+        <div style="flex:1">
+          <div style="font-size:15px;font-weight:600;color:var(--t1);margin-bottom:3px">Notifications</div>
+          <div style="font-size:13px;color:var(--t2);line-height:1.5">Smart reminders before important dates</div>
+        </div>
+        <div id="notifStatus" style="width:10px;height:10px;border-radius:50%;background:var(--border)"></div>
+      </div>
+    </div>
+
+    <div style="margin-top:40px;display:flex;flex-direction:column;gap:10px">
+      <button class="btn" onclick="requestPermissions()">Allow Access</button>
+      <button class="btn-outline" onclick="go('s-onboard')">Skip for now</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ ONBOARDING ══ -->
+<div class="screen" id="s-onboard">
+  <div style="flex:1;display:flex;flex-direction:column;padding:32px 24px 40px">
+    <!-- Progress -->
+    <div style="display:flex;gap:6px;margin-bottom:36px">
+      <div id="ob-p1" style="flex:1;height:3px;border-radius:3px;background:var(--green)"></div>
+      <div id="ob-p2" style="flex:1;height:3px;border-radius:3px;background:var(--border)"></div>
+      <div id="ob-p3" style="flex:1;height:3px;border-radius:3px;background:var(--border)"></div>
+    </div>
+
+    <!-- STEP 1 -->
+    <div id="ob-1" style="display:flex;flex-direction:column;flex:1">
+      <div style="font-family:'DM Serif Display',serif;font-size:28px;color:var(--t1);margin-bottom:8px">What's your name?</div>
+      <div style="font-size:14px;color:var(--t2);margin-bottom:32px">Let's personalize your experience</div>
+      <div style="display:flex;flex-direction:column;gap:14px;flex:1">
+        <div>
+          <div class="lbl">Full Name</div>
+          <input class="inp" id="ob-name" placeholder="Your full name">
+        </div>
+        <div>
+          <div class="lbl">Email</div>
+          <input class="inp" id="ob-email" type="email" placeholder="your@email.com">
+        </div>
+        <div>
+          <div class="lbl">Phone (optional)</div>
+          <input class="inp" id="ob-phone" type="tel" placeholder="+1 234 567 8900">
+        </div>
+      </div>
+      <button class="btn" onclick="obNext(2)">Continue</button>
+    </div>
+
+    <!-- STEP 2 -->
+    <div id="ob-2" style="display:none;flex-direction:column;flex:1">
+      <div style="font-family:'DM Serif Display',serif;font-size:28px;color:var(--t1);margin-bottom:8px">Your business</div>
+      <div style="font-size:14px;color:var(--t2);margin-bottom:28px">We'll pick the best events for you</div>
+      <div>
+        <div class="lbl" style="margin-bottom:8px">Business Name</div>
+        <input class="inp" id="ob-biz" placeholder="e.g. Central Cafe" style="margin-bottom:20px">
+      </div>
+      <div class="lbl" style="margin-bottom:10px">Business Type</div>
+      <div style="display:flex;flex-direction:column;gap:8px;flex:1;overflow-y:auto">
+        <div class="ob-opt" onclick="selOb(this,'cafe')">
+          <div style="width:36px;height:36px;border-radius:10px;background:var(--green-l);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="1.7" stroke-linecap="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/></svg>
+          </div>
+          <div style="font-size:14px;font-weight:500;color:var(--t1);flex:1">Coffee & Beverages</div>
+          <div style="width:20px;height:20px;border-radius:50%;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center" class="ob-chk"></div>
+        </div>
+        <div class="ob-opt" onclick="selOb(this,'restaurant')">
+          <div style="width:36px;height:36px;border-radius:10px;background:var(--green-l);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="1.7" stroke-linecap="round"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3zm0 0v7"/></svg>
+          </div>
+          <div style="font-size:14px;font-weight:500;color:var(--t1);flex:1">Restaurant & Food</div>
+          <div style="width:20px;height:20px;border-radius:50%;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center" class="ob-chk"></div>
+        </div>
+        <div class="ob-opt" onclick="selOb(this,'retail')">
+          <div style="width:36px;height:36px;border-radius:10px;background:var(--green-l);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="1.7" stroke-linecap="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+          </div>
+          <div style="font-size:14px;font-weight:500;color:var(--t1);flex:1">Retail & Shopping</div>
+          <div style="width:20px;height:20px;border-radius:50%;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center" class="ob-chk"></div>
+        </div>
+        <div class="ob-opt" onclick="selOb(this,'beauty')">
+          <div style="width:36px;height:36px;border-radius:10px;background:var(--green-l);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="1.7" stroke-linecap="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          </div>
+          <div style="font-size:14px;font-weight:500;color:var(--t1);flex:1">Beauty & Wellness</div>
+          <div style="width:20px;height:20px;border-radius:50%;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center" class="ob-chk"></div>
+        </div>
+        <div class="ob-opt" onclick="selOb(this,'other')">
+          <div style="width:36px;height:36px;border-radius:10px;background:var(--green-l);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="1.7" stroke-linecap="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+          </div>
+          <div style="font-size:14px;font-weight:500;color:var(--t1);flex:1">Other Business</div>
+          <div style="width:20px;height:20px;border-radius:50%;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center" class="ob-chk"></div>
+        </div>
+      </div>
+      <button class="btn" style="margin-top:20px" onclick="obNext(3)">Continue</button>
+    </div>
+
+    <!-- STEP 3 -->
+    <div id="ob-3" style="display:none;flex-direction:column;flex:1">
+      <div style="font-family:'DM Serif Display',serif;font-size:28px;color:var(--t1);margin-bottom:8px">Privacy first.</div>
+      <div style="font-size:14px;color:var(--t2);line-height:1.7;margin-bottom:32px">Your data stays yours — always.</div>
+      <div style="display:flex;flex-direction:column;gap:12px;flex:1">
+        <div style="background:var(--card);border:1.5px solid var(--border);border-radius:18px;padding:18px;display:flex;gap:14px">
+          <div style="width:40px;height:40px;border-radius:12px;background:var(--green-l);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="1.7" stroke-linecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          </div>
+          <div>
+            <div style="font-size:14px;font-weight:600;color:var(--t1);margin-bottom:3px">Data is encrypted</div>
+            <div style="font-size:12px;color:var(--t2);line-height:1.5">Used only to personalize your experience</div>
+          </div>
+        </div>
+        <div style="background:var(--card);border:1.5px solid var(--border);border-radius:18px;padding:18px;display:flex;gap:14px">
+          <div style="width:40px;height:40px;border-radius:12px;background:var(--blue-l);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="1.7" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+          </div>
+          <div>
+            <div style="font-size:14px;font-weight:600;color:var(--t1);margin-bottom:3px">Never shared</div>
+            <div style="font-size:12px;color:var(--t2);line-height:1.5">We will never sell your data to anyone</div>
+          </div>
+        </div>
+        <div style="background:var(--card);border:1.5px solid var(--border);border-radius:18px;padding:18px;display:flex;gap:14px">
+          <div style="width:40px;height:40px;border-radius:12px;background:var(--gold-l);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.7" stroke-linecap="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+          </div>
+          <div>
+            <div style="font-size:14px;font-weight:600;color:var(--t1);margin-bottom:3px">Delete anytime</div>
+            <div style="font-size:12px;color:var(--t2);line-height:1.5">Full control over your account and data</div>
+          </div>
+        </div>
+      </div>
+      <div style="margin-top:32px;display:flex;flex-direction:column;gap:10px">
+        <button class="btn" onclick="finishOnboard()">I Agree — Start Planning</button>
+        <button class="btn-outline" onclick="go('s-splash')">Cancel</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ HOME ══ -->
+<div class="screen" id="s-home">
+  <!-- Header -->
+  <div style="padding:20px 24px 14px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0">
+    <div>
+      <div style="font-size:13px;color:var(--t2);margin-bottom:2px">Hello, <span id="userName" style="color:var(--t1);font-weight:600">there</span></div>
+      <div style="font-family:'DM Serif Display',serif;font-size:24px;color:var(--t1)">Your Timeline</div>
+    </div>
+    <div style="display:flex;gap:8px">
+      <div class="hbtn" onclick="go('s-notif')">
+        <svg viewBox="0 0 24 24"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+        <div class="dot"></div>
+      </div>
+      <div class="hbtn" onclick="navTo(2)">
+        <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      </div>
+    </div>
+  </div>
+
+  <!-- Location + Date strip -->
+  <div style="padding:0 24px 16px;display:flex;gap:8px;flex-shrink:0">
+    <div onclick="go('s-country-select')" style="display:flex;align-items:center;gap:6px;background:var(--card);border:1.5px solid var(--border);border-radius:50px;padding:7px 14px;cursor:pointer;box-shadow:var(--shadow)">
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2.2" stroke-linecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+      <span id="homeCountryFlag" style="font-size:14px">🇸🇦</span>
+      <span id="homeCountryName" style="font-size:12px;font-weight:500;color:var(--t1)">Saudi Arabia</span>
+    </div>
+    <div style="display:flex;align-items:center;gap:6px;background:var(--green-l);border:1.5px solid rgba(26,107,60,.15);border-radius:50px;padding:7px 14px;margin-right:auto">
+      <div style="width:6px;height:6px;border-radius:50%;background:var(--green);animation:pulse 2s infinite"></div>
+      <span id="liveDate" style="font-size:12px;font-weight:600;color:var(--green)"></span>
+    </div>
+  </div>
+
+  <!-- HERO CARD -->
+  <div style="padding:0 24px 20px;flex-shrink:0">
+    <div id="heroCard" onclick="var nx=allEvs().filter(function(e){return e.days>=0;});if(nx.length)openEventDetail(nx[0])" style="background:var(--green);border-radius:24px;padding:22px;cursor:pointer;position:relative;overflow:hidden;box-shadow:0 8px 32px rgba(26,107,60,.3)">
+      <!-- subtle pattern -->
+      <div style="position:absolute;top:-30px;left:-30px;width:150px;height:150px;border-radius:50%;background:rgba(255,255,255,.06)"></div>
+      <div style="position:absolute;bottom:-20px;right:-20px;width:100px;height:100px;border-radius:50%;background:rgba(255,255,255,.04)"></div>
+      <div style="font-size:11px;font-weight:600;color:rgba(255,255,255,.7);letter-spacing:1px;text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:6px">
+        <div style="width:6px;height:6px;border-radius:50%;background:#fff;animation:pulse 1.5s infinite"></div>
+        NEXT EVENT
+      </div>
+      <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
+        <div style="flex:1">
+          <div id="heroName" style="font-family:'DM Serif Display',serif;font-size:22px;color:#fff;line-height:1.2;margin-bottom:6px">—</div>
+          <div id="heroDate" style="font-size:13px;color:rgba(255,255,255,.75);margin-bottom:18px">—</div>
+          <div style="display:inline-flex;align-items:baseline;gap:5px;background:rgba(255,255,255,.15);border-radius:50px;padding:6px 14px">
+            <span id="heroDays" style="font-size:20px;font-weight:700;color:#fff;letter-spacing:-1px">—</span>
+            <span style="font-size:12px;color:rgba(255,255,255,.8);font-weight:500">days left</span>
+          </div>
+        </div>
+        <div style="width:60px;height:60px;border-radius:18px;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center">
+          <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.4" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/></svg>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TIMELINE -->
+  <div style="padding:0 24px;display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-shrink:0">
+    <div style="font-size:13px;font-weight:600;color:var(--t2);letter-spacing:.3px">All Events</div>
+    <div onclick="showAddSheet()" style="display:flex;align-items:center;gap:5px;background:var(--gold-l);border:1.5px solid rgba(184,134,11,.2);border-radius:50px;padding:6px 14px;cursor:pointer">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      <span style="font-size:12px;font-weight:600;color:var(--gold)">Add Custom</span>
+    </div>
+  </div>
+
+  <div style="overflow-x:auto;scrollbar-width:none;flex-shrink:0">
+    <div id="timelineRow" style="display:flex;align-items:flex-start;padding:4px 24px 8px;min-width:max-content;gap:0"></div>
+  </div>
+
+  <div style="height:1px;background:var(--border);margin:20px 24px;flex-shrink:0"></div>
+
+  <!-- UPCOMING -->
+  <div style="padding:0 24px;display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-shrink:0">
+    <div style="font-size:13px;font-weight:600;color:var(--t2);letter-spacing:.3px">Coming Up</div>
+    <span onclick="navTo(1)" style="font-size:12px;font-weight:600;color:var(--green);cursor:pointer">View all</span>
+  </div>
+  <div style="padding:0 24px;padding-bottom:110px;display:flex;flex-direction:column;gap:10px" id="upcomingList"></div>
+</div>
+
+<!-- ══ CALENDAR ══ -->
+<div class="screen" id="s-calendar">
+  <div style="padding:20px 24px 16px;display:flex;justify-content:space-between;align-items:center;flex-shrink:0">
+    <div style="font-family:'DM Serif Display',serif;font-size:24px;color:var(--t1)">Calendar</div>
+    <div onclick="showAddSheet()" style="display:flex;align-items:center;gap:5px;background:var(--gold-l);border:1.5px solid rgba(184,134,11,.2);border-radius:50px;padding:7px 16px;cursor:pointer">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+      <span style="font-size:12px;font-weight:600;color:var(--gold)">Custom Event</span>
+    </div>
+  </div>
+  <!-- Filters -->
+  <div style="display:flex;gap:8px;padding:0 24px;margin-bottom:16px;overflow-x:auto;scrollbar-width:none;flex-shrink:0">
+    <button onclick="setCalFilter('all',this)" class="cal-f" style="padding:8px 18px;border-radius:50px;border:1.5px solid var(--green);background:var(--green);color:#fff;font-family:DM Sans,sans-serif;font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap">All</button>
+    <button onclick="setCalFilter('national',this)" class="cal-f" style="padding:8px 18px;border-radius:50px;border:1.5px solid var(--border);background:transparent;color:var(--t2);font-family:DM Sans,sans-serif;font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap">National</button>
+    <button onclick="setCalFilter('religious',this)" class="cal-f" style="padding:8px 18px;border-radius:50px;border:1.5px solid var(--border);background:transparent;color:var(--t2);font-family:DM Sans,sans-serif;font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap">Religious</button>
+    <button onclick="setCalFilter('seasonal',this)" class="cal-f" style="padding:8px 18px;border-radius:50px;border:1.5px solid var(--border);background:transparent;color:var(--t2);font-family:DM Sans,sans-serif;font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap">Seasonal</button>
+    <button onclick="setCalFilter('custom',this)" class="cal-f" style="padding:8px 18px;border-radius:50px;border:1.5px solid rgba(184,134,11,.3);background:transparent;color:var(--gold);font-family:DM Sans,sans-serif;font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap">Custom</button>
+  </div>
+  <div style="padding:0 24px;padding-bottom:110px;flex:1;overflow-y:auto" id="calList"></div>
+</div>
+
+<!-- ══ EVENT DETAIL ══ -->
+<div class="screen" id="s-event-detail">
+  <div style="padding:14px 24px;display:flex;align-items:center;gap:12px;flex-shrink:0">
+    <div class="bk" onclick="go('s-home')"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></div>
+    <div id="detailTitle" style="font-size:17px;font-weight:600;color:var(--t1)">Event</div>
+  </div>
+  <div style="padding:0 24px;padding-bottom:110px;overflow-y:auto;flex:1">
+    <!-- Hero -->
+    <div id="detailHeroCard" style="background:var(--green);border-radius:24px;padding:24px;margin-bottom:16px;text-align:center;position:relative;overflow:hidden">
+      <div style="position:absolute;top:-20px;right:-20px;width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.07)"></div>
+      <div style="width:64px;height:64px;border-radius:20px;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center;margin:0 auto 16px">
+        <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.4" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/></svg>
+      </div>
+      <div id="detailName" style="font-family:'DM Serif Display',serif;font-size:22px;color:#fff;margin-bottom:6px">—</div>
+      <div id="detailDate" style="font-size:13px;color:rgba(255,255,255,.75);margin-bottom:18px">—</div>
+      <div style="display:inline-flex;align-items:baseline;gap:5px;background:rgba(255,255,255,.15);border-radius:50px;padding:8px 20px">
+        <span id="detailDays" style="font-size:28px;font-weight:700;color:#fff;letter-spacing:-1px">—</span>
+        <span style="font-size:13px;color:rgba(255,255,255,.8)">days left</span>
+      </div>
+    </div>
+    <!-- Smart Reminders -->
+    <div style="background:var(--card);border:1.5px solid var(--border);border-radius:20px;padding:20px;margin-bottom:14px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+        <div style="font-size:15px;font-weight:600;color:var(--t1)">Smart Reminders</div>
+        <div style="font-size:11px;font-weight:600;color:var(--green);background:var(--green-l);padding:4px 10px;border-radius:50px">Auto-set</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:12px">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div>
+            <div style="font-size:14px;color:var(--t1);font-weight:500">2 months before</div>
+            <div style="font-size:11px;color:var(--t3);margin-top:1px">Start planning campaign</div>
+          </div>
+          <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+        </div>
+        <div style="height:1px;background:var(--border)"></div>
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div>
+            <div style="font-size:14px;color:var(--t1);font-weight:500">1 month before</div>
+            <div style="font-size:11px;color:var(--t3);margin-top:1px">Finalize content</div>
+          </div>
+          <div class="toggle on" onclick="this.classList.toggle('on')"></div>
+        </div>
+        <div style="height:1px;background:var(--border)"></div>
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div>
+            <div style="font-size:14px;color:var(--t1);font-weight:500">1 week before</div>
+            <div style="font-size:11px;color:var(--t3);margin-top:1px">Launch reminder</div>
+          </div>
+          <div class="toggle" onclick="this.classList.toggle('on')"></div>
+        </div>
+      </div>
+    </div>
+    <!-- Notes -->
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
+      <div style="font-size:15px;font-weight:600;color:var(--t1)">Notes</div>
+      <button onclick="showNoteSheet()" style="background:var(--green);color:#fff;border:none;border-radius:50px;padding:7px 16px;font-family:DM Sans,sans-serif;font-size:13px;font-weight:500;cursor:pointer">+ Add Note</button>
+    </div>
+    <div id="notesList"></div>
+  </div>
+</div>
+
+<!-- ══ PROFILE ══ -->
+<div class="screen" id="s-profile">
+  <div style="padding:20px 24px 16px;flex-shrink:0">
+    <div style="font-family:'DM Serif Display',serif;font-size:24px;color:var(--t1)">Account</div>
+  </div>
+  <div style="padding:0 24px;padding-bottom:110px;overflow-y:auto;flex:1">
+    <!-- Avatar -->
+    <div style="background:var(--green);border-radius:24px;padding:24px;margin-bottom:16px;display:flex;align-items:center;gap:16px">
+      <div id="profileAvatar" style="width:64px;height:64px;border-radius:20px;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+        <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+      </div>
+      <div>
+        <div id="profileName" style="font-family:'DM Serif Display',serif;font-size:20px;color:#fff">—</div>
+        <div id="profileBiz" style="font-size:13px;color:rgba(255,255,255,.75);margin-top:3px">—</div>
+        <div style="font-size:11px;font-weight:600;color:rgba(255,255,255,.6);margin-top:6px;background:rgba(255,255,255,.15);display:inline-block;padding:3px 10px;border-radius:50px">Free Plan</div>
+      </div>
+    </div>
+    <!-- Info -->
+    <div style="background:var(--card);border:1.5px solid var(--border);border-radius:20px;overflow:hidden;margin-bottom:12px">
+      <div style="padding:16px;border-bottom:1px solid var(--border)">
+        <div class="lbl" style="margin-bottom:4px">Email</div>
+        <div id="profileEmail" style="font-size:14px;color:var(--t1)">—</div>
+      </div>
+      <div style="padding:16px;border-bottom:1px solid var(--border)">
+        <div class="lbl" style="margin-bottom:4px">Phone</div>
+        <div id="profilePhone" style="font-size:14px;color:var(--t1)">—</div>
+      </div>
+      <div style="padding:16px">
+        <div class="lbl" style="margin-bottom:4px">Country</div>
+        <div style="display:flex;align-items:center;gap:8px">
+          <span id="profileCountryFlag" style="font-size:18px">🇸🇦</span>
+          <span id="profileCountryName" style="font-size:14px;color:var(--t1)">Saudi Arabia</span>
+        </div>
+      </div>
+    </div>
+    <!-- Settings -->
+    <div style="background:var(--card);border:1.5px solid var(--border);border-radius:20px;overflow:hidden;margin-bottom:12px">
+      <div onclick="go('s-country-select')" style="padding:16px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border);cursor:pointer">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--t2)" stroke-width="1.7" stroke-linecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        <span style="font-size:14px;color:var(--t1);flex:1">Change Country</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--t3)" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+      </div>
+      <div onclick="go('s-auth')" style="padding:16px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border);cursor:pointer">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--t2)" stroke-width="1.7" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+        <span style="font-size:14px;color:var(--t1);flex:1">Language</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--t3)" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+      </div>
+      <div onclick="go('s-splash')" style="padding:16px;display:flex;align-items:center;gap:12px;cursor:pointer">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="1.7" stroke-linecap="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        <span style="font-size:14px;color:var(--red);flex:1">Sign Out</span>
+      </div>
+    </div>
+    <div style="text-align:center;font-size:12px;color:var(--t3);margin-top:8px">Marketing Planner v1.0 · Free</div>
+  </div>
+</div>
+
+<!-- ══ NOTIF ══ -->
+<div class="screen" id="s-notif">
+  <div style="padding:14px 24px;display:flex;align-items:center;gap:12px;flex-shrink:0">
+    <div class="bk" onclick="go('s-home')"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></div>
+    <div style="font-family:'DM Serif Display',serif;font-size:20px;color:var(--t1)">Notifications</div>
+  </div>
+  <div style="padding:0 24px;padding-bottom:110px">
+    <div style="background:var(--card);border:1.5px solid var(--border);border-radius:18px;padding:16px;display:flex;gap:12px;margin-bottom:10px">
+      <div style="width:44px;height:44px;border-radius:14px;background:var(--green-l);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="1.6" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+      </div>
+      <div style="flex:1">
+        <div style="font-size:14px;font-weight:600;color:var(--t1);margin-bottom:3px" id="notif1">Event coming up</div>
+        <div style="font-size:12px;color:var(--t2);line-height:1.5">Time to start planning your campaign</div>
+        <div style="font-size:11px;color:var(--t3);margin-top:5px">1 hour ago</div>
+      </div>
+      <div style="width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0;margin-top:4px"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ AUTH ══ -->
+<div class="screen" id="s-auth">
+  <div style="flex:1;display:flex;flex-direction:column;padding:40px 28px">
+    <!-- Logo -->
+    <div style="width:56px;height:56px;background:var(--green);border-radius:18px;display:flex;align-items:center;justify-content:center;margin-bottom:32px">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2.5"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+    </div>
+
+    <!-- Tabs -->
+    <div style="display:flex;background:var(--card2);border-radius:14px;padding:4px;margin-bottom:28px">
+      <div id="tab-signup" onclick="switchAuthTab('signup')" style="flex:1;text-align:center;padding:10px;border-radius:10px;background:var(--card);font-size:14px;font-weight:600;color:var(--t1);cursor:pointer;box-shadow:var(--shadow)">Sign Up</div>
+      <div id="tab-signin" onclick="switchAuthTab('signin')" style="flex:1;text-align:center;padding:10px;border-radius:10px;font-size:14px;font-weight:500;color:var(--t2);cursor:pointer">Sign In</div>
+    </div>
+
+    <!-- SIGN UP FORM -->
+    <div id="form-signup" style="display:flex;flex-direction:column;gap:14px;flex:1">
+      <div style="font-family:'DM Serif Display',serif;font-size:26px;color:var(--t1);margin-bottom:4px">Create account</div>
+      <div>
+        <div class="lbl">Full Name</div>
+        <input class="inp" id="su-name" placeholder="Your full name">
+      </div>
+      <div>
+        <div class="lbl">Email</div>
+        <input class="inp" id="su-email" type="email" placeholder="your@email.com">
+      </div>
+      <div>
+        <div class="lbl">Password</div>
+        <input class="inp" id="su-password" type="password" placeholder="Min 6 characters">
+      </div>
+      <div>
+        <div class="lbl">Business Name (optional)</div>
+        <input class="inp" id="su-biz" placeholder="e.g. Central Cafe">
+      </div>
+      <div style="flex:1"></div>
+      <button class="btn" onclick="handleSignUp()">Create Account</button>
+      <div style="text-align:center;font-size:13px;color:var(--t2)">Already have an account? <span onclick="switchAuthTab('signin')" style="color:var(--green);font-weight:600;cursor:pointer">Sign In</span></div>
+    </div>
+
+    <!-- SIGN IN FORM -->
+    <div id="form-signin" style="display:none;flex-direction:column;gap:14px;flex:1">
+      <div style="font-family:'DM Serif Display',serif;font-size:26px;color:var(--t1);margin-bottom:4px">Welcome back</div>
+      <div>
+        <div class="lbl">Email</div>
+        <input class="inp" id="si-email" type="email" placeholder="your@email.com">
+      </div>
+      <div>
+        <div class="lbl">Password</div>
+        <input class="inp" id="si-password" type="password" placeholder="Your password">
+      </div>
+      <div style="flex:1"></div>
+      <button class="btn" onclick="handleSignIn()">Sign In</button>
+      <div style="text-align:center;font-size:13px;color:var(--t2)">New here? <span onclick="switchAuthTab('signup')" style="color:var(--green);font-weight:600;cursor:pointer">Create account</span></div>
+    </div>
+
+  </div>
+</div>
+
+</div><!-- /screens -->
+
+<!-- NAV -->
+<div class="nav" id="mainNav" style="display:none">
+  <div class="ni active" id="nav0" onclick="navTo(0)">
+    <svg viewBox="0 0 24 24"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+    <span data-translate>Home</span>
+  </div>
+  <div class="ni" id="nav1" onclick="navTo(1)">
+    <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+    <span data-translate>Calendar</span>
+  </div>
+  <div class="ni" id="nav2" onclick="navTo(2)">
+    <svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+    <span data-translate>Account</span>
+  </div>
+</div>
+</div><!-- /phone -->
+
+<div class="toast" id="toastEl"></div>
+
+<!-- SHEET: ADD EVENT -->
+<div class="overlay" id="addSheet" onclick="if(this===event.target)closeAddSheet()">
+  <div class="sheet">
+    <div class="handle"></div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+      <div style="font-family:'DM Serif Display',serif;font-size:22px;color:var(--t1)">Custom Event</div>
+      <div style="width:8px;height:8px;border-radius:50%;background:var(--gold)"></div>
+    </div>
+    <div style="font-size:13px;color:var(--t2);margin-bottom:24px">Auto-placed in your timeline by date</div>
+    <div style="margin-bottom:16px">
+      <div class="lbl">Event Name</div>
+      <input id="evName" class="inp" placeholder="e.g. Business Anniversary">
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:24px">
+      <div>
+        <div class="lbl">Start Date</div>
+        <input id="evStart" class="inp" type="date" style="direction:ltr">
+      </div>
+      <div>
+        <div class="lbl">End Date</div>
+        <input id="evEnd" class="inp" type="date" style="direction:ltr">
+      </div>
+    </div>
+    <button class="btn-gold" onclick="addCustomEvent()" style="margin-bottom:10px">Add to Timeline</button>
+    <button class="btn-outline" onclick="closeAddSheet()">Cancel</button>
+  </div>
+</div>
+
+<!-- SHEET: NOTE -->
+<div class="overlay" id="noteSheet" onclick="if(this===event.target)closeNoteSheet()">
+  <div class="sheet">
+    <div class="handle"></div>
+    <div style="font-family:'DM Serif Display',serif;font-size:22px;color:var(--t1);margin-bottom:24px">New Note</div>
+    <div style="margin-bottom:14px">
+      <div class="lbl">Title</div>
+      <input id="noteTitle" class="inp" placeholder="Note title...">
+    </div>
+    <div style="margin-bottom:24px">
+      <div class="lbl">Details</div>
+      <textarea id="noteBody" class="inp" style="height:90px;resize:none" placeholder="Add details..."></textarea>
+    </div>
+    <div style="position:sticky;bottom:0;background:var(--card);padding-top:16px">
+    <button class="btn" onclick="addNote()" style="margin-bottom:10px">Save Note</button>
+    <button class="btn-outline" onclick="closeNoteSheet()">Cancel</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── DATA ──
+const LANGS=[
+  {code:'ar',name:'Arabic',native:'العربية',flag:'🇸🇦'},
+  {code:'en',name:'English',native:'English',flag:'🇬🇧'},
+  {code:'fr',name:'French',native:'Français',flag:'🇫🇷'},
+  {code:'es',name:'Spanish',native:'Español',flag:'🇪🇸'},
+  {code:'de',name:'German',native:'Deutsch',flag:'🇩🇪'},
+  {code:'zh',name:'Chinese',native:'中文',flag:'🇨🇳'},
+  {code:'ja',name:'Japanese',native:'日本語',flag:'🇯🇵'},
+  {code:'tr',name:'Turkish',native:'Türkçe',flag:'🇹🇷'},
+  {code:'pt',name:'Portuguese',native:'Português',flag:'🇵🇹'},
+  {code:'ru',name:'Russian',native:'Русский',flag:'🇷🇺'},
+  {code:'ko',name:'Korean',native:'한국어',flag:'🇰🇷'},
+  {code:'hi',name:'Hindi',native:'हिन्दी',flag:'🇮🇳'},
+  {code:'it',name:'Italian',native:'Italiano',flag:'🇮🇹'},
+  {code:'nl',name:'Dutch',native:'Nederlands',flag:'🇳🇱'},
+  {code:'fa',name:'Persian',native:'فارسی',flag:'🇮🇷'},
+  {code:'ur',name:'Urdu',native:'اردو',flag:'🇵🇰'},
+  {code:'id',name:'Indonesian',native:'Bahasa Indonesia',flag:'🇮🇩'},
+  {code:'ms',name:'Malay',native:'Bahasa Melayu',flag:'🇲🇾'},
+  {code:'th',name:'Thai',native:'ภาษาไทย',flag:'🇹🇭'},
+  {code:'vi',name:'Vietnamese',native:'Tiếng Việt',flag:'🇻🇳'},
+  {code:'sv',name:'Swedish',native:'Svenska',flag:'🇸🇪'},
+  {code:'da',name:'Danish',native:'Dansk',flag:'🇩🇰'},
+  {code:'no',name:'Norwegian',native:'Norsk',flag:'🇳🇴'},
+  {code:'fi',name:'Finnish',native:'Suomi',flag:'🇫🇮'},
+  {code:'pl',name:'Polish',native:'Polski',flag:'🇵🇱'},
+  {code:'ro',name:'Romanian',native:'Română',flag:'🇷🇴'},
+  {code:'cs',name:'Czech',native:'Čeština',flag:'🇨🇿'},
+  {code:'hu',name:'Hungarian',native:'Magyar',flag:'🇭🇺'},
+  {code:'el',name:'Greek',native:'Ελληνικά',flag:'🇬🇷'},
+  {code:'he',name:'Hebrew',native:'עברית',flag:'🇮🇱'},
+  {code:'uk',name:'Ukrainian',native:'Українська',flag:'🇺🇦'},
+  {code:'bn',name:'Bengali',native:'বাংলা',flag:'🇧🇩'},
+  {code:'sw',name:'Swahili',native:'Kiswahili',flag:'🇰🇪'},
+  {code:'az',name:'Azerbaijani',native:'Azərbaycan',flag:'🇦🇿'},
+  {code:'af',name:'Afrikaans',native:'Afrikaans',flag:'🇿🇦'},
+  {code:'sq',name:'Albanian',native:'Shqip',flag:'🇦🇱'},
+  {code:'bg',name:'Bulgarian',native:'Български',flag:'🇧🇬'},
+  {code:'hr',name:'Croatian',native:'Hrvatski',flag:'🇭🇷'},
+  {code:'sk',name:'Slovak',native:'Slovenčina',flag:'🇸🇰'},
+  {code:'mn',name:'Mongolian',native:'Монгол',flag:'🇲🇳'},
+  {code:'ne',name:'Nepali',native:'नेपाली',flag:'🇳🇵'},
+  {code:'am',name:'Amharic',native:'አማርኛ',flag:'🇪🇹'},
+  {code:'my',name:'Burmese',native:'မြန်မာ',flag:'🇲🇲'},
+  {code:'km',name:'Khmer',native:'ខ្មែរ',flag:'🇰🇭'},
+  {code:'ta',name:'Tamil',native:'தமிழ்',flag:'🇱🇰'},
+  {code:'mk',name:'Macedonian',native:'Македонски',flag:'🇲🇰'}
+];
+
+const COUNTRIES=[
+  {code:'SA',name:'Saudi Arabia',flag:'🇸🇦',region:'Middle East',events:[
+    {name:'Eid Al-Adha',date:'2026-06-06',label:'Jun 6',type:'religious',color:'var(--green)',bg:'var(--green-l)'},
+    {name:'Summer Season',date:'2026-06-21',label:'Jun-Sep',type:'seasonal',color:'var(--blue)',bg:'var(--blue-l)'},
+    {name:'Saudi National Day',date:'2026-09-23',label:'Sep 23',type:'national',color:'var(--gold)',bg:'var(--gold-l)'},
+    {name:'Riyadh Season',date:'2026-10-01',label:'Oct-Jan',type:'seasonal',color:'var(--blue)',bg:'var(--blue-l)'},
+    {name:'Black Friday',date:'2026-11-28',label:'Nov 28',type:'seasonal',color:'var(--t2)',bg:'var(--card2)',dim:true},
+    {name:'Ramadan',date:'2027-03-01',label:'Mar 2027',type:'religious',color:'var(--t2)',bg:'var(--card2)',dim:true}
+  ]},
+  {code:'AE',name:'UAE',flag:'🇦🇪',region:'Middle East',events:[
+    {name:'Eid Al-Adha',date:'2026-06-06',label:'Jun 6',type:'religious',color:'var(--green)',bg:'var(--green-l)'},
+    {name:'UAE National Day',date:'2026-12-02',label:'Dec 2',type:'national',color:'var(--gold)',bg:'var(--gold-l)'},
+    {name:'White Friday',date:'2026-11-28',label:'Nov 28',type:'seasonal',color:'var(--blue)',bg:'var(--blue-l)',dim:true}
+  ]},
+  {code:'EG',name:'Egypt',flag:'🇪🇬',region:'Middle East',events:[
+    {name:'Eid Al-Adha',date:'2026-06-06',label:'Jun 6',type:'religious',color:'var(--green)',bg:'var(--green-l)'},
+    {name:'Independence Day',date:'2026-07-23',label:'Jul 23',type:'national',color:'var(--gold)',bg:'var(--gold-l)'},
+    {name:'Revolution Day',date:'2027-01-25',label:'Jan 25',type:'national',color:'var(--gold)',bg:'var(--gold-l)',dim:true}
+  ]},
+  {code:'KW',name:'Kuwait',flag:'🇰🇼',region:'Middle East',events:[
+    {name:'Eid Al-Adha',date:'2026-06-06',label:'Jun 6',type:'religious',color:'var(--green)',bg:'var(--green-l)'},
+    {name:'National Day',date:'2027-02-25',label:'Feb 25',type:'national',color:'var(--gold)',bg:'var(--gold-l)',dim:true}
+  ]},
+  {code:'US',name:'United States',flag:'🇺🇸',region:'Americas',events:[
+    {name:'Independence Day',date:'2026-07-04',label:'Jul 4',type:'national',color:'var(--gold)',bg:'var(--gold-l)'},
+    {name:'Halloween',date:'2026-10-31',label:'Oct 31',type:'seasonal',color:'var(--gold)',bg:'var(--gold-l)'},
+    {name:'Thanksgiving',date:'2026-11-26',label:'Nov 26',type:'national',color:'var(--gold)',bg:'var(--gold-l)'},
+    {name:'Black Friday',date:'2026-11-27',label:'Nov 27',type:'seasonal',color:'var(--blue)',bg:'var(--blue-l)'},
+    {name:'Christmas',date:'2026-12-25',label:'Dec 25',type:'religious',color:'var(--green)',bg:'var(--green-l)',dim:true}
+  ]},
+  {code:'GB',name:'United Kingdom',flag:'🇬🇧',region:'Europe',events:[
+    {name:'Summer Season',date:'2026-06-21',label:'Jun-Sep',type:'seasonal',color:'var(--blue)',bg:'var(--blue-l)'},
+    {name:'Black Friday',date:'2026-11-27',label:'Nov 27',type:'seasonal',color:'var(--blue)',bg:'var(--blue-l)'},
+    {name:'Christmas',date:'2026-12-25',label:'Dec 25',type:'religious',color:'var(--green)',bg:'var(--green-l)',dim:true}
+  ]},
+  {code:'FR',name:'France',flag:'🇫🇷',region:'Europe',events:[
+    {name:'Fete Nationale',date:'2026-07-14',label:'Jul 14',type:'national',color:'var(--gold)',bg:'var(--gold-l)'},
+    {name:'Black Friday',date:'2026-11-27',label:'Nov 27',type:'seasonal',color:'var(--blue)',bg:'var(--blue-l)',dim:true},
+    {name:'Noel',date:'2026-12-25',label:'Dec 25',type:'religious',color:'var(--green)',bg:'var(--green-l)',dim:true}
+  ]},
+  {code:'DE',name:'Germany',flag:'🇩🇪',region:'Europe',events:[
+    {name:'Oktoberfest',date:'2026-09-19',label:'Sep 19',type:'seasonal',color:'var(--gold)',bg:'var(--gold-l)'},
+    {name:'Black Friday',date:'2026-11-27',label:'Nov 27',type:'seasonal',color:'var(--blue)',bg:'var(--blue-l)',dim:true},
+    {name:'Weihnachten',date:'2026-12-25',label:'Dec 25',type:'religious',color:'var(--green)',bg:'var(--green-l)',dim:true}
+  ]},
+  {code:'TR',name:'Turkey',flag:'🇹🇷',region:'Europe',events:[
+    {name:'Eid Al-Adha',date:'2026-06-06',label:'Jun 6',type:'religious',color:'var(--green)',bg:'var(--green-l)'},
+    {name:'Republic Day',date:'2026-10-29',label:'Oct 29',type:'national',color:'var(--gold)',bg:'var(--gold-l)'},
+    {name:'Black Friday',date:'2026-11-27',label:'Nov 27',type:'seasonal',color:'var(--blue)',bg:'var(--blue-l)',dim:true}
+  ]},
+  {code:'CN',name:'China',flag:'🇨🇳',region:'Asia',events:[
+    {name:'Chinese New Year',date:'2027-01-29',label:'Jan 29',type:'national',color:'var(--green)',bg:'var(--green-l)',dim:true},
+    {name:'National Day',date:'2026-10-01',label:'Oct 1',type:'national',color:'var(--gold)',bg:'var(--gold-l)'},
+    {name:'Mid-Autumn Festival',date:'2026-09-24',label:'Sep 24',type:'religious',color:'var(--gold)',bg:'var(--gold-l)'},
+    {name:'Singles Day',date:'2026-11-11',label:'Nov 11',type:'seasonal',color:'var(--blue)',bg:'var(--blue-l)',dim:true}
+  ]},
+  {code:'JP',name:'Japan',flag:'🇯🇵',region:'Asia',events:[
+    {name:'Tanabata',date:'2026-07-07',label:'Jul 7',type:'national',color:'var(--blue)',bg:'var(--blue-l)'},
+    {name:'Obon',date:'2026-08-13',label:'Aug 13',type:'religious',color:'var(--gold)',bg:'var(--gold-l)'},
+    {name:'Christmas',date:'2026-12-25',label:'Dec 25',type:'seasonal',color:'var(--green)',bg:'var(--green-l)',dim:true}
+  ]},
+  {code:'KR',name:'South Korea',flag:'🇰🇷',region:'Asia',events:[
+    {name:'Chuseok',date:'2026-09-24',label:'Sep 24',type:'national',color:'var(--gold)',bg:'var(--gold-l)'},
+    {name:'Pepero Day',date:'2026-11-11',label:'Nov 11',type:'seasonal',color:'var(--blue)',bg:'var(--blue-l)',dim:true},
+    {name:'Christmas',date:'2026-12-25',label:'Dec 25',type:'seasonal',color:'var(--green)',bg:'var(--green-l)',dim:true}
+  ]},
+  {code:'IN',name:'India',flag:'🇮🇳',region:'Asia',events:[
+    {name:'Independence Day',date:'2026-08-15',label:'Aug 15',type:'national',color:'var(--gold)',bg:'var(--gold-l)'},
+    {name:'Diwali',date:'2026-11-08',label:'Nov 8',type:'religious',color:'var(--gold)',bg:'var(--gold-l)',dim:true}
+  ]},
+  {code:'BR',name:'Brazil',flag:'🇧🇷',region:'Americas',events:[
+    {name:'Independence Day',date:'2026-09-07',label:'Sep 7',type:'national',color:'var(--gold)',bg:'var(--gold-l)'},
+    {name:'Black Friday',date:'2026-11-27',label:'Nov 27',type:'seasonal',color:'var(--blue)',bg:'var(--blue-l)',dim:true},
+    {name:'Natal',date:'2026-12-25',label:'Dec 25',type:'religious',color:'var(--green)',bg:'var(--green-l)',dim:true}
+  ]},
+  {code:'NG',name:'Nigeria',flag:'🇳🇬',region:'Africa',events:[
+    {name:'Independence Day',date:'2026-10-01',label:'Oct 1',type:'national',color:'var(--gold)',bg:'var(--gold-l)'},
+    {name:'Christmas',date:'2026-12-25',label:'Dec 25',type:'religious',color:'var(--green)',bg:'var(--green-l)',dim:true}
+  ]},
+  {code:'ZA',name:'South Africa',flag:'🇿🇦',region:'Africa',events:[
+    {name:'Freedom Day',date:'2027-04-27',label:'Apr 27',type:'national',color:'var(--gold)',bg:'var(--gold-l)',dim:true},
+    {name:'Black Friday',date:'2026-11-27',label:'Nov 27',type:'seasonal',color:'var(--blue)',bg:'var(--blue-l)',dim:true},
+    {name:'Christmas',date:'2026-12-25',label:'Dec 25',type:'religious',color:'var(--green)',bg:'var(--green-l)',dim:true}
+  ]}
+];
+
+// ── TRANSLATIONS ──
+var T = {
+  en:{
+    home:'Home',calendar:'Calendar',account:'Account',
+    daysLeft:'days left',days:'days',today:'Today',
+    allEvents:'All Events',addCustom:'Add Custom',
+    comingUp:'Coming Up',viewAll:'View all',
+    noNotes:'No notes yet',addFirstNote:'Add first note',
+    national:'National',religious:'Religious',seasonal:'Seasonal',custom:'Custom',all:'All',
+    hello:'Hello,',yourTimeline:'Your Timeline',nextEvent:'NEXT EVENT',
+    customBadge:'CUSTOM EVENT',
+    enterName:'Please enter your name',
+    enterNameDate:'Enter name and date',
+    enterTitle:'Enter a title',
+    addedOk:'Added to timeline',
+    removed:'Removed',
+    noteSaved:'Note saved',
+    locationOk:'Location detected'
+  },
+  ar:{
+    home:'الرئيسية',calendar:'التقويم',account:'حسابي',
+    daysLeft:'يوم متبقي',days:'يوم',today:'اليوم',
+    allEvents:'كل الأحداث',addCustom:'إضافة خاص',
+    comingUp:'الأحداث القريبة',viewAll:'الكل',
+    noNotes:'لا توجد نوتات',addFirstNote:'أضف أول نوتة',
+    national:'وطنية',religious:'دينية',seasonal:'موسمية',custom:'خاصة',all:'الكل',
+    hello:'مرحباً،',yourTimeline:'خططك التسويقية',nextEvent:'الأقرب',
+    customBadge:'حدث خاص',
+    enterName:'أدخل اسمك',
+    enterNameDate:'أدخل الاسم والتاريخ',
+    enterTitle:'أدخل العنوان',
+    addedOk:'تمت الإضافة',
+    removed:'تم الحذف',
+    noteSaved:'تم الحفظ',
+    locationOk:'تم اكتشاف موقعك'
+  }
+};
+
+function tr(k){ return (T[lang]||T.en)[k] || T.en[k] || k; }
+
+
+// ── CALENDARIFIC API ──
+const CAL_API_KEY = 'p7Fe6eYnuHhHTl0JpImeUHhZvg6D7r6s';
+const CAL_BASE = 'https://calendarific.com/api/v2';
+
+async function fetchCountryEvents(countryCode, year) {
+  try {
+    var url = CAL_BASE + '/holidays?api_key=' + CAL_API_KEY 
+      + '&country=' + countryCode 
+      + '&year=' + year
+      + '&type=national,religious,observance';
+    
+    var response = await fetch(url);
+    var data = await response.json();
+    
+    if (data.response && data.response.holidays) {
+      var today = new Date(); today.setHours(0,0,0,0);
+      
+      var events = data.response.holidays.map(function(h) {
+        var date = h.date.iso.split('T')[0];
+        var eventDate = new Date(date);
+        var days = Math.ceil((eventDate - today) / 86400000);
+        
+        // Determine color by type
+        var color = 'var(--blue)', bg = 'var(--blue-l)';
+        if (h.type && h.type[0]) {
+          var t = h.type[0].toLowerCase();
+          if (t.includes('national') || t.includes('public')) {
+            color = 'var(--gold)'; bg = 'var(--gold-l)';
+          } else if (t.includes('religious')) {
+            color = 'var(--green)'; bg = 'var(--green-l)';
+          }
+        }
+
+        return {
+          name: h.name,
+          date: date,
+          label: new Date(date + 'T12:00:00').toLocaleDateString('en-US', {month:'short', day:'numeric'}),
+          type: h.type ? h.type[0].toLowerCase() : 'national',
+          color: color,
+          bg: bg,
+          days: days,
+          isCustom: false,
+          dim: days > 180
+        };
+      })
+      .filter(function(e) { return e.days >= 0; }) // Only future events
+      .sort(function(a,b) { return a.days - b.days; }) // Sort by closest first
+      .slice(0, 15); // Top 15 upcoming
+      
+      return events;
+    }
+    return [];
+  } catch(e) {
+    console.log('Calendarific error:', e);
+    return null; // fallback to local data
+  }
+}
+
+async function loadEventsForCountry(countryCode) {
+  var year = new Date().getFullYear();
+  
+  // Get current year events
+  var events = await fetchCountryEvents(countryCode, year);
+  
+  // Also get next year events and combine
+  var nextEvents = await fetchCountryEvents(countryCode, year + 1);
+  
+  var allEvents = [];
+  if (events) allEvents = allEvents.concat(events);
+  if (nextEvents) allEvents = allEvents.concat(nextEvents);
+  
+  // Remove duplicates by name+date, keep only future events, sort by days
+  var seen = {};
+  var today = new Date(); today.setHours(0,0,0,0);
+  
+  allEvents = allEvents.filter(function(e) {
+    var key = e.name + e.date;
+    if (seen[key]) return false;
+    seen[key] = true;
+    return e.days >= 0;
+  }).sort(function(a,b) { return a.days - b.days; }).slice(0, 15);
+  
+  if (allEvents.length > 0) {
+    var c = COUNTRIES.find(function(x) { return x.code === countryCode; });
+    if (c) {
+      c.events = allEvents;
+      renderTimeline();
+      renderUpcoming();
+      updateHero();
+    }
+  }
+}
+
+
+// ── TRANSLATION API (LibreTranslate) ──
+var translationCache = {};
+var LIBRE_URL = 'https://libretranslate.com/translate';
+
+async function translateText(text, targetLang) {
+  if (!text || !text.trim()) return text;
+  
+  var cacheKey = targetLang + ':' + text;
+  if (translationCache[cacheKey]) return translationCache[cacheKey];
+  
+  try {
+    var res = await fetch(LIBRE_URL, {
+      method: 'POST',
+      headers: {'Content-Type': 'application/json'},
+      body: JSON.stringify({
+        q: text,
+        source: 'en',
+        target: targetLang,
+        format: 'text'
+      })
+    });
+    var data = await res.json();
+    if (data.translatedText) {
+      translationCache[cacheKey] = data.translatedText;
+      return data.translatedText;
+    }
+  } catch(e) {
+    // Fallback to MyMemory if LibreTranslate fails
+    try {
+      var url2 = 'https://api.mymemory.translated.net/get?q=' 
+        + encodeURIComponent(text) + '&langpair=en|' + targetLang;
+      var res2 = await fetch(url2);
+      var data2 = await res2.json();
+      if (data2.responseStatus === 200) {
+        translationCache[cacheKey] = data2.responseData.translatedText;
+        return data2.responseData.translatedText;
+      }
+    } catch(e2) {}
+  }
+  return text;
+}
+
+async function translateUI(targetLang) {
+  var manualLangs = ['en','ar','fr','es','de','zh','ja','tr'];
+  if (manualLangs.includes(targetLang)) return;
+  
+  toast('Translating...');
+  
+  // Get all translatable elements
+  var elements = document.querySelectorAll('[data-translate]');
+  var texts = [];
+  elements.forEach(function(el) {
+    var original = el.getAttribute('data-original') || el.textContent.trim();
+    el.setAttribute('data-original', original);
+    texts.push(original);
+  });
+  
+  // Translate all at once
+  var promises = texts.map(function(t) { return translateText(t, targetLang); });
+  var translated = await Promise.all(promises);
+  
+  elements.forEach(function(el, i) {
+    if (translated[i]) el.textContent = translated[i];
+  });
+  
+  toast('✓ Translated');
+}
+
+
+// ── AUTO-DETECT COUNTRY ──
+async function autoDetectCountry() {
+  try {
+    // Use IP geolocation API (free, no key needed)
+    var res = await fetch('https://ipapi.co/json/');
+    var data = await res.json();
+    
+    if (data.country_code) {
+      var detected = COUNTRIES.find(function(c) {
+        return c.code === data.country_code;
+      });
+      
+      if (detected) {
+        // Show confirmation toast
+        showCountryConfirm(detected);
+      } else {
+        // Country not in our list - default to nearest
+        var fallback = COUNTRIES.find(function(c) { return c.code === 'US'; });
+        if (fallback) showCountryConfirm(fallback);
+      }
+    }
+  } catch(e) {
+    console.log('Auto-detect error:', e);
+    // Silent fail - user selects manually
+  }
+}
+
+function showCountryConfirm(detectedCountry) {
+  // Show confirmation overlay
+  var overlay = document.getElementById('countryConfirmOverlay');
+  var flag = document.getElementById('confirmFlag');
+  var name = document.getElementById('confirmName');
+  
+  if (overlay && flag && name) {
+    flag.textContent = detectedCountry.flag;
+    name.textContent = detectedCountry.name;
+    overlay.style.display = 'flex';
+    
+    // Auto-confirm after 3 seconds if no action
+    var timer = setTimeout(function() {
+      confirmCountry(detectedCountry.code);
+    }, 3000);
+    
+    overlay.setAttribute('data-timer', timer);
+    overlay.setAttribute('data-code', detectedCountry.code);
+  } else {
+    // Fallback - just set the country
+    selectCountry(detectedCountry.code);
+  }
+}
+
+function confirmCountry(code) {
+  var overlay = document.getElementById('countryConfirmOverlay');
+  if (overlay) {
+    var timer = overlay.getAttribute('data-timer');
+    if (timer) clearTimeout(parseInt(timer));
+    overlay.style.display = 'none';
+  }
+  // Update country
+  var c = COUNTRIES.find(function(x) { return x.code === code; });
+  if (c) {
+    country = c;
+    ['homeCountryFlag','profileCountryFlag'].forEach(function(id) {
+      var el = document.getElementById(id); if (el) el.textContent = c.flag;
+    });
+    ['homeCountryName','profileCountryName'].forEach(function(id) {
+      var el = document.getElementById(id); if (el) el.textContent = c.name;
+    });
+    loadEventsForCountry(code);
+    renderTimeline();
+    renderUpcoming();
+    updateHero();
+  }
+}
+
+function changeCountryFromConfirm() {
+  var overlay = document.getElementById('countryConfirmOverlay');
+  if (overlay) {
+    var timer = overlay.getAttribute('data-timer');
+    if (timer) clearTimeout(parseInt(timer));
+    overlay.style.display = 'none';
+  }
+  go('s-country-select');
+}
+
+// ── STATE ──
+var lang = 'en';
+var country = COUNTRIES[0];
+var customEvs = [];
+var eventNotes = {};
+var currentEvent = null;
+var calFilter = 'all';
+var selBizType = '';
+var userData = {};
+
+// ── HELPERS ──
+function calcDays(d) {
+  var t = new Date();
+  t.setHours(0,0,0,0);
+  var target = new Date(d);
+  var diff = Math.ceil((target - t) / 86400000);
+  while (diff < 0) {
+    target.setFullYear(target.getFullYear() + 1);
+    diff = Math.ceil((target - t) / 86400000);
+  }
+  return diff;
+}
+
+function allEvs() {
+  var base = country.events.map(function(e) {
+    return Object.assign({}, e, {days: calcDays(e.date), isCustom: false});
+  });
+  var custom = customEvs.map(function(e, i) {
+    return Object.assign({}, e, {
+      days: calcDays(e.date),
+      color: 'var(--gold)',
+      bg: 'var(--gold-l)',
+      isCustom: true,
+      customIdx: i
+    });
+  });
+  return base.concat(custom).sort(function(a,b) {
+    return new Date(a.date) - new Date(b.date);
+  });
+}
+
+// ── CLOCK ──
+function updateClock() {
+  var n = new Date();
+  var h = String(n.getHours()).padStart(2,'0');
+  var m = String(n.getMinutes()).padStart(2,'0');
+  var el = document.getElementById('statusTime');
+  if (el) el.textContent = h + ':' + m;
+  var ld = document.getElementById('liveDate');
+  if (ld) ld.textContent = n.toLocaleDateString('en-US', {month:'short', day:'numeric'});
+}
+setInterval(updateClock, 1000);
+updateClock();
+setInterval(function() { renderTimeline(); renderUpcoming(); }, 60000);
+
+// ── NAV ──
+function go(id) {
+  document.querySelectorAll('.screen').forEach(function(s) { s.classList.remove('active'); });
+  var el = document.getElementById(id);
+  if (el) { el.classList.add('active'); el.scrollTop = 0; }
+  if (id === 's-calendar') renderCalendar();
+}
+
+function navTo(i) {
+  document.querySelectorAll('.ni').forEach(function(n) { n.classList.remove('active'); });
+  document.getElementById('nav' + i).classList.add('active');
+  go(['s-home','s-calendar','s-profile'][i]);
+}
+
+function quickLogin() {
+  document.getElementById('mainNav').style.display = 'flex';
+  renderTimeline();
+  renderUpcoming();
+  go('s-home');
+}
+
+function toast(msg) {
+  var el = document.getElementById('toastEl');
+  el.textContent = msg;
+  el.classList.add('show');
+  setTimeout(function() { el.classList.remove('show'); }, 2400);
+}
+
+// ── LANG ──
+function renderLangList(f) {
+  f = f || '';
+  var list = document.getElementById('langList');
+  list.innerHTML = '';
+  var wrap = document.createElement('div');
+  wrap.style.cssText = 'display:flex;flex-direction:column;gap:6px';
+  LANGS.filter(function(l) {
+    return !f || l.name.toLowerCase().indexOf(f.toLowerCase()) > -1 || l.native.toLowerCase().indexOf(f.toLowerCase()) > -1;
+  }).forEach(function(l) {
+    var div = document.createElement('div');
+    div.style.cssText = 'background:' + (l.code===lang?'var(--green-l)':'var(--card)') + ';border:1.5px solid ' + (l.code===lang?'var(--green)':'var(--border)') + ';border-radius:16px;padding:14px 16px;display:flex;align-items:center;gap:12px;cursor:pointer';
+    div.innerHTML = '<span style="font-size:22px">' + l.flag + '</span>'
+      + '<div style="flex:1"><div style="font-size:15px;font-weight:500;color:var(--t1)">' + l.native + '</div>'
+      + '<div style="font-size:12px;color:var(--t2);margin-top:1px">' + l.name + '</div></div>'
+      + (l.code===lang ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>' : '');
+    div.addEventListener('click', function() { selectLang(l.code); });
+    wrap.appendChild(div);
+  });
+  list.appendChild(wrap);
+}
+
+function selectLang(code) {
+  lang = code;
+  var l = LANGS.find(function(x) { return x.code === code; });
+  var rtl = ['ar','he','fa','ur'];
+  document.documentElement.dir = rtl.indexOf(code) > -1 ? 'rtl' : 'ltr';
+  renderLangList();
+  toast('✓ ' + l.native);
+  setTimeout(function() { go('s-country-select'); }, 500);
+}
+
+// ── COUNTRY ──
+function renderCountryList(f) {
+  f = f || '';
+  var list = document.getElementById('countryList');
+  list.innerHTML = '';
+  var items = COUNTRIES.filter(function(c) {
+    return !f || c.name.toLowerCase().indexOf(f.toLowerCase()) > -1;
+  });
+  var regions = {};
+  items.forEach(function(c) {
+    if (!regions[c.region]) regions[c.region] = [];
+    regions[c.region].push(c);
+  });
+  Object.keys(regions).forEach(function(r) {
+    var hdr = document.createElement('div');
+    hdr.style.cssText = 'font-size:11px;font-weight:600;color:var(--t3);letter-spacing:.8px;text-transform:uppercase;padding:14px 0 8px';
+    hdr.textContent = r;
+    list.appendChild(hdr);
+    var grp = document.createElement('div');
+    grp.style.cssText = 'display:flex;flex-direction:column;gap:6px;margin-bottom:8px';
+    regions[r].forEach(function(c) {
+      var div = document.createElement('div');
+      div.style.cssText = 'background:' + (c.code===country.code?'var(--green-l)':'var(--card)') + ';border:1.5px solid ' + (c.code===country.code?'var(--green)':'var(--border)') + ';border-radius:16px;padding:14px 16px;display:flex;align-items:center;gap:12px;cursor:pointer';
+      div.innerHTML = '<span style="font-size:22px">' + c.flag + '</span>'
+        + '<div style="flex:1"><div style="font-size:15px;font-weight:500;color:var(--t1)">' + c.name + '</div>'
+        + '<div style="font-size:12px;color:var(--t2);margin-top:1px">' + c.events.length + ' events</div></div>'
+        + (c.code===country.code ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>' : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--t3)" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>');
+      div.addEventListener('click', function() { selectCountry(c.code); });
+      grp.appendChild(div);
+    });
+    list.appendChild(grp);
+  });
+}
+
+function selectCountry(code) {
+  var c = COUNTRIES.find(function(x) { return x.code === code; });
+  if (!c) return;
+  country = c;
+  ['homeCountryFlag','profileCountryFlag'].forEach(function(id) {
+    var el = document.getElementById(id); if (el) el.textContent = c.flag;
+  });
+  ['homeCountryName','profileCountryName'].forEach(function(id) {
+    var el = document.getElementById(id); if (el) el.textContent = c.name;
+  });
+  renderCountryList();
+  renderTimeline();
+  renderUpcoming();
+  updateHero();
+  toast('✓ ' + c.flag + ' ' + c.name);
+  setTimeout(function() { go('s-permissions'); }, 500);
+}
+
+// ── PERMISSIONS ──
+function requestPermissions() {
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(
+      function() {
+        var el = document.getElementById('locStatus');
+        if (el) el.style.background = 'var(--green)';
+        toast(tr('locationOk'));
+      },
+      function() {
+        var el = document.getElementById('locStatus');
+        if (el) el.style.background = 'var(--red)';
+      }
+    );
+  }
+  if ('Notification' in window) {
+    Notification.requestPermission().then(function(p) {
+      var el = document.getElementById('notifStatus');
+      if (el) el.style.background = p === 'granted' ? 'var(--green)' : 'var(--red)';
+    });
+  }
+  setTimeout(function() { go('s-onboard'); }, 1500);
+}
+
+// ── ONBOARDING ──
+function obNext(step) {
+  if (step === 2) {
+    var n = document.getElementById('ob-name').value.trim();
+    if (!n) { toast(tr('enterName')); return; }
+    userData.name = n;
+    userData.email = document.getElementById('ob-email').value.trim();
+    userData.phone = document.getElementById('ob-phone').value.trim();
+  }
+  if (step === 3) {
+    userData.biz = document.getElementById('ob-biz').value.trim();
+    userData.bizType = selBizType;
+  }
+  [1,2,3].forEach(function(i) {
+    var el = document.getElementById('ob-' + i);
+    if (el) el.style.display = i === step ? 'flex' : 'none';
+  });
+  ['ob-p1','ob-p2','ob-p3'].forEach(function(id, i) {
+    var el = document.getElementById(id);
+    if (el) el.style.background = i < step ? 'var(--green)' : 'var(--border)';
+  });
+}
+
+function selOb(el, type) {
+  document.getElementById('ob-2').querySelectorAll('.ob-opt').forEach(function(o) { o.classList.remove('sel'); });
+  el.classList.add('sel');
+  selBizType = type;
+}
+
+function finishOnboard() {
+  var name = userData.name || 'User';
+  var unEl = document.getElementById('userName');
+  if (unEl) unEl.textContent = name;
+  var pnEl = document.getElementById('profileName');
+  if (pnEl) pnEl.textContent = name;
+  var pbEl = document.getElementById('profileBiz');
+  if (pbEl) pbEl.textContent = userData.biz || '';
+  var peEl = document.getElementById('profileEmail');
+  if (peEl) peEl.textContent = userData.email || '—';
+  var ppEl = document.getElementById('profilePhone');
+  if (ppEl) ppEl.textContent = userData.phone || '—';
+  var av = document.getElementById('profileAvatar');
+  if (av) {
+    av.innerHTML = '<span style="font-size:24px;font-weight:700;color:#fff">' + name[0].toUpperCase() + '</span>';
+  }
+  try { localStorage.setItem('mp_user', JSON.stringify(userData)); } catch(e) {}
+  document.getElementById('mainNav').style.display = 'flex';
+  renderTimeline();
+  renderUpcoming();
+  renderEventNotes();
+  updateHero();
+  go('s-home');
+}
+
+// ── HERO ──
+function updateHero() {
+  var evs = allEvs().filter(function(e) { return e.days >= 0; });
+  if (!evs.length) return;
+  var ev = evs[0];
+  var nameEl = document.getElementById('heroName');
+  if (nameEl) nameEl.textContent = ev.name;
+  var dateEl = document.getElementById('heroDate');
+  if (dateEl) dateEl.textContent = ev.label || ev.dateLabel || '';
+  var daysEl = document.getElementById('heroDays');
+  if (daysEl) daysEl.textContent = ev.days > 0 ? ev.days : tr('today');
+}
+
+// ── EVENT DETAIL ──
+function openEventDetail(ev) {
+  currentEvent = ev;
+  var color = ev.isCustom ? 'var(--gold)' : (ev.color || 'var(--green)');
+  var titleEl = document.getElementById('detailTitle');
+  if (titleEl) titleEl.textContent = ev.name;
+  var nameEl = document.getElementById('detailName');
+  if (nameEl) nameEl.textContent = ev.name;
+  var dateEl = document.getElementById('detailDate');
+  if (dateEl) dateEl.textContent = ev.label || ev.dateLabel || '';
+  var daysEl = document.getElementById('detailDays');
+  if (daysEl) daysEl.textContent = ev.days > 0 ? ev.days : tr('today');
+  var card = document.getElementById('detailHeroCard');
+  if (card) card.style.background = color;
+  var badge = document.getElementById('detailCustomBadge');
+  if (badge) badge.style.display = ev.isCustom ? 'inline-block' : 'none';
+  renderEventNotes();
+  go('s-event-detail');
+}
+
+// ── TIMELINE ──
+function renderTimeline() {
+  var row = document.getElementById('timelineRow');
+  if (!row) return;
+  row.innerHTML = '';
+  var evs = allEvs();
+  evs.forEach(function(ev, i) {
+    if (i > 0) {
+      var conn = document.createElement('div');
+      conn.style.cssText = 'height:2px;width:12px;background:' + (ev.isCustom ? 'rgba(184,134,11,.3)' : 'var(--border)') + ';margin-top:5px;flex-shrink:0';
+      row.appendChild(conn);
+    }
+    var isFirst = i === 0;
+    var wrap = document.createElement('div');
+    wrap.style.cssText = 'display:flex;flex-direction:column;align-items:center;cursor:pointer;width:' + (isFirst ? '116' : '104') + 'px;' + (ev.dim ? 'opacity:.45' : '');
+    
+    var dot = document.createElement('div');
+    dot.style.cssText = 'width:' + (isFirst?'13':'9') + 'px;height:' + (isFirst?'13':'9') + 'px;border-radius:50%;background:' + ev.color + ';border:2.5px solid var(--bg);flex-shrink:0;z-index:1;margin-top:1px;' + (isFirst ? 'box-shadow:0 0 0 4px ' + ev.bg : '');
+    wrap.appendChild(dot);
+
+    var line = document.createElement('div');
+    line.style.cssText = 'width:2px;height:16px;background:linear-gradient(to bottom,' + ev.color + ',transparent)';
+    wrap.appendChild(line);
+
+    var card = document.createElement('div');
+    card.style.cssText = 'background:' + (isFirst?'var(--card)':'var(--card2)') + ';border:' + (isFirst?'2px solid '+ev.color:'1.5px solid var(--border)') + ';border-radius:16px;padding:12px;width:100%;position:relative;' + (isFirst?'box-shadow:var(--shadow-lg)':'');
+
+    if (isFirst) {
+      var tag = document.createElement('div');
+      tag.style.cssText = 'font-size:9px;font-weight:600;color:' + ev.color + ';letter-spacing:.8px;text-transform:uppercase;margin-bottom:5px;display:flex;align-items:center;gap:4px';
+      var dot2 = document.createElement('div');
+      dot2.style.cssText = 'width:5px;height:5px;border-radius:50%;background:' + ev.color;
+      tag.appendChild(dot2);
+      tag.appendChild(document.createTextNode(tr('nextEvent')));
+      card.appendChild(tag);
+    } else if (ev.isCustom) {
+      var ctag = document.createElement('div');
+      ctag.style.cssText = 'font-size:9px;font-weight:600;color:var(--gold);letter-spacing:.8px;margin-bottom:4px';
+      ctag.textContent = tr('customBadge');
+      card.appendChild(ctag);
+    }
+
+    var nm = document.createElement('div');
+    nm.style.cssText = 'font-size:12px;font-weight:600;color:var(--t1);line-height:1.3;margin-bottom:4px';
+    nm.textContent = ev.name;
+    card.appendChild(nm);
+
+    var dt = document.createElement('div');
+    dt.style.cssText = 'font-size:10px;color:var(--t2);margin-bottom:8px';
+    dt.textContent = ev.label || ev.dateLabel || '';
+    card.appendChild(dt);
+
+    var pill = document.createElement('div');
+    pill.style.cssText = 'background:' + ev.bg + ';border-radius:50px;padding:4px 10px;display:inline-flex;align-items:center;gap:4px';
+    var dnum = document.createElement('span');
+    dnum.style.cssText = 'font-size:13px;font-weight:700;color:' + ev.color;
+    dnum.textContent = ev.days > 0 ? ev.days : '!';
+    pill.appendChild(dnum);
+    if (ev.days > 0) {
+      var dunit = document.createElement('span');
+      dunit.style.cssText = 'font-size:9px;color:var(--t2)';
+      dunit.textContent = tr('days');
+      pill.appendChild(dunit);
+    }
+    card.appendChild(pill);
+
+    if (ev.isCustom) {
+      var rmBtn = document.createElement('div');
+      rmBtn.style.cssText = 'position:absolute;top:6px;left:6px;width:20px;height:20px;border-radius:50%;background:var(--card2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer';
+      rmBtn.innerHTML = '<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="var(--t2)" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
+      rmBtn.addEventListener('click', function(e) {
+        e.stopPropagation();
+        removeCustomEvent(ev.customIdx);
+      });
+      card.appendChild(rmBtn);
+    }
+
+    wrap.appendChild(card);
+    wrap.addEventListener('click', function() { openEventDetail(ev); });
+    row.appendChild(wrap);
+  });
+}
+
+// ── UPCOMING ──
+function renderUpcoming() {
+  var c = document.getElementById('upcomingList');
+  if (!c) return;
+  c.innerHTML = '';
+  var evs = allEvs().filter(function(e) { return e.days >= 0; }).slice(0, 5);
+  evs.forEach(function(ev, i) {
+    var div = document.createElement('div');
+    div.style.cssText = 'background:var(--card);border:1.5px solid var(--border);border-radius:18px;padding:16px;cursor:pointer;display:flex;align-items:center;gap:14px;box-shadow:var(--shadow);margin-bottom:10px';
+    div.style.animation = 'fadeUp .3s ease ' + (i * 0.07) + 's both';
+
+    var icon = document.createElement('div');
+    icon.style.cssText = 'width:48px;height:48px;border-radius:16px;background:' + ev.bg + ';display:flex;align-items:center;justify-content:center;flex-shrink:0';
+    icon.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="' + ev.color + '" stroke-width="1.6" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/></svg>';
+
+    var info = document.createElement('div');
+    info.style.cssText = 'flex:1';
+    var evName = document.createElement('div');
+    evName.style.cssText = 'font-size:15px;font-weight:600;color:var(--t1);margin-bottom:3px';
+    evName.textContent = ev.name;
+    var evSub = document.createElement('div');
+    evSub.style.cssText = 'font-size:12px;color:var(--t2)';
+    evSub.textContent = (ev.label || ev.dateLabel || '') + (ev.isCustom ? ' · Custom' : ' · ' + (ev.type ? ev.type.charAt(0).toUpperCase() + ev.type.slice(1) : ''));
+    info.appendChild(evName);
+    info.appendChild(evSub);
+
+    var daysDiv = document.createElement('div');
+    daysDiv.style.cssText = 'text-align:center;flex-shrink:0';
+    var dNum = document.createElement('div');
+    dNum.style.cssText = 'font-size:24px;font-weight:700;color:' + ev.color + ';line-height:1;letter-spacing:-1px';
+    dNum.textContent = ev.days > 0 ? ev.days : '!';
+    var dLbl = document.createElement('div');
+    dLbl.style.cssText = 'font-size:10px;color:var(--t2);margin-top:2px;font-weight:500';
+    dLbl.textContent = tr('days');
+    daysDiv.appendChild(dNum);
+    daysDiv.appendChild(dLbl);
+
+    div.appendChild(icon);
+    div.appendChild(info);
+    div.appendChild(daysDiv);
+    div.addEventListener('click', function() { openEventDetail(ev); });
+    c.appendChild(div);
+  });
+}
+
+// ── CALENDAR ──
+function renderCalendar() {
+  var c = document.getElementById('calList');
+  if (!c) return;
+  c.innerHTML = '';
+  var evs = allEvs().filter(function(e) {
+    return calFilter === 'all' || e.type === calFilter || (calFilter === 'custom' && e.isCustom);
+  });
+  if (!evs.length) {
+    c.innerHTML = '<div style="text-align:center;padding:48px 0;color:var(--t3)">No events</div>';
+    return;
+  }
+  evs.forEach(function(ev) {
+    var div = document.createElement('div');
+    div.style.cssText = 'background:var(--card);border:1.5px solid var(--border);border-radius:18px;padding:16px;margin-bottom:10px;display:flex;align-items:center;gap:14px;cursor:pointer;box-shadow:var(--shadow)';
+
+    var icon = document.createElement('div');
+    icon.style.cssText = 'width:52px;height:52px;border-radius:16px;background:' + ev.bg + ';display:flex;align-items:center;justify-content:center;flex-shrink:0';
+    icon.innerHTML = '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="' + ev.color + '" stroke-width="1.6" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/></svg>';
+
+    var info = document.createElement('div');
+    info.style.cssText = 'flex:1';
+    var row1 = document.createElement('div');
+    row1.style.cssText = 'display:flex;align-items:center;gap:6px;margin-bottom:3px';
+    var evName = document.createElement('div');
+    evName.style.cssText = 'font-size:15px;font-weight:600;color:var(--t1)';
+    evName.textContent = ev.name;
+    row1.appendChild(evName);
+    if (ev.isCustom) {
+      var badge = document.createElement('span');
+      badge.style.cssText = 'font-size:10px;font-weight:600;color:var(--gold);background:var(--gold-l);padding:2px 8px;border-radius:50px';
+      badge.textContent = 'Custom';
+      row1.appendChild(badge);
+    }
+    var evSub = document.createElement('div');
+    evSub.style.cssText = 'font-size:12px;color:var(--t2)';
+    evSub.textContent = ev.label || ev.dateLabel || '';
+    info.appendChild(row1);
+    info.appendChild(evSub);
+
+    var daysDiv = document.createElement('div');
+    daysDiv.style.cssText = 'text-align:center;flex-shrink:0';
+    var dNum = document.createElement('div');
+    dNum.style.cssText = 'font-size:20px;font-weight:700;color:' + ev.color + ';line-height:1';
+    dNum.textContent = ev.days > 0 ? ev.days : tr('today');
+    var dLbl = document.createElement('div');
+    dLbl.style.cssText = 'font-size:10px;color:var(--t2);margin-top:2px';
+    dLbl.textContent = tr('days');
+    daysDiv.appendChild(dNum);
+    daysDiv.appendChild(dLbl);
+
+    div.appendChild(icon);
+    div.appendChild(info);
+    div.appendChild(daysDiv);
+    div.addEventListener('click', function() { openEventDetail(ev); });
+    c.appendChild(div);
+  });
+}
+
+function setCalFilter(type, btn) {
+  calFilter = type;
+  document.querySelectorAll('.cal-f').forEach(function(b) {
+    b.style.background = 'transparent';
+    b.style.color = 'var(--t2)';
+    b.style.borderColor = 'var(--border)';
+  });
+  btn.style.background = type === 'custom' ? 'var(--gold-l)' : 'var(--green)';
+  btn.style.color = type === 'custom' ? 'var(--gold)' : '#fff';
+  btn.style.borderColor = type === 'custom' ? 'rgba(184,134,11,.3)' : 'var(--green)';
+  renderCalendar();
+}
+
+// ── CUSTOM EVENT ──
+function showAddSheet() {
+  document.getElementById('evStart').value = new Date().toISOString().split('T')[0];
+  document.getElementById('evEnd').value = '';
+  document.getElementById('evName').value = '';
+  document.getElementById('addSheet').classList.add('show');
+}
+function closeAddSheet() { document.getElementById('addSheet').classList.remove('show'); }
+
+async function addCustomEvent() {
+  document.activeElement.blur();
+  var name = document.getElementById('evName').value.trim();
+  var start = document.getElementById('evStart').value;
+  if (!name || !start) { toast(tr('enterNameDate')); return; }
+  var end = document.getElementById('evEnd').value;
+  var sd = new Date(start);
+  var M = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  var lbl = sd.getDate() + ' ' + M[sd.getMonth()];
+  if (end) { var ed = new Date(end); lbl += ' - ' + ed.getDate() + ' ' + M[ed.getMonth()]; }
+  var ev = {name: name, dateLabel: lbl, date: start, type: 'custom'};
+  customEvs.push(ev);
+  // Save to Supabase
+  try {
+    var userResult = await sb.auth.getUser();
+    if (userResult.data && userResult.data.user) {
+      await sb.from('custom_events').insert({
+        user_id: userResult.data.user.id,
+        name: name,
+        start_date: start,
+        end_date: end || null,
+        date_label: lbl
+      });
+    }
+  } catch(e) { console.log('Save error:', e); }
+  renderTimeline();
+  renderUpcoming();
+  updateHero();
+  if (document.getElementById('s-calendar').classList.contains('active')) renderCalendar();
+  closeAddSheet();
+  toast(tr('addedOk'));
+}
+
+function removeCustomEvent(idx) {
+  customEvs.splice(idx, 1);
+  renderTimeline();
+  renderUpcoming();
+  updateHero();
+  toast(tr('removed'));
+}
+
+// ── NOTES ──
+function showNoteSheet() { 
+  document.getElementById('noteTitle').value = '';
+  document.getElementById('noteBody').value = '';
+  document.getElementById('noteSheet').classList.add('show'); 
+}
+function closeNoteSheet() { document.getElementById('noteSheet').classList.remove('show'); }
+
+async function addNote() {
+  // Close keyboard first
+  document.activeElement.blur();
+  var title = document.getElementById('noteTitle').value.trim();
+  if (!title) { toast(tr('enterTitle')); return; }
+  var key = currentEvent ? currentEvent.name : '__global__';
+  if (!eventNotes[key]) eventNotes[key] = [];
+  var note = {title: title, body: document.getElementById('noteBody').value.trim()};
+  eventNotes[key].push(note);
+  // Save to Supabase
+  try {
+    var userResult = await sb.auth.getUser();
+    if (userResult.data && userResult.data.user) {
+      await sb.from('notes').insert({
+        user_id: userResult.data.user.id,
+        event_name: key,
+        title: title,
+        body: note.body || ''
+      });
+    }
+  } catch(e) { console.log('Note save error:', e); }
+  renderEventNotes();
+  closeNoteSheet();
+  toast(tr('noteSaved'));
+}
+
+function renderEventNotes() {
+  var c = document.getElementById('notesList');
+  if (!c) return;
+  var key = currentEvent ? currentEvent.name : '';
+  var evNotes = eventNotes[key] || [];
+  c.innerHTML = '';
+
+  if (!evNotes.length) {
+    var empty = document.createElement('div');
+    empty.style.cssText = 'background:var(--card2);border:2px dashed var(--border);border-radius:18px;padding:32px;text-align:center';
+    var ico = document.createElement('div');
+    ico.style.cssText = 'width:44px;height:44px;border-radius:14px;background:var(--card);border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center;margin:0 auto 12px';
+    ico.innerHTML = '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--t3)" stroke-width="1.6" stroke-linecap="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>';
+    var noTxt = document.createElement('div');
+    noTxt.style.cssText = 'font-size:14px;font-weight:500;color:var(--t2);margin-bottom:12px';
+    noTxt.textContent = tr('noNotes');
+    var btn = document.createElement('button');
+    btn.style.cssText = 'background:var(--green);color:#fff;border:none;border-radius:50px;padding:10px 20px;font-size:13px;font-weight:500;cursor:pointer';
+    btn.textContent = tr('addFirstNote');
+    btn.addEventListener('click', showNoteSheet);
+    empty.appendChild(ico);
+    empty.appendChild(noTxt);
+    empty.appendChild(btn);
+    c.appendChild(empty);
+    return;
+  }
+
+  evNotes.forEach(function(n, i) {
+    var card = document.createElement('div');
+    card.style.cssText = 'background:var(--card);border:1.5px solid var(--border);border-radius:16px;padding:16px;margin-bottom:10px';
+    var hdr = document.createElement('div');
+    hdr.style.cssText = 'display:flex;align-items:center;justify-content:space-between;margin-bottom:' + (n.body ? '6' : '0') + 'px';
+    var ttl = document.createElement('div');
+    ttl.style.cssText = 'font-size:14px;font-weight:600;color:var(--t1)';
+    ttl.textContent = n.title;
+    var del = document.createElement('div');
+    del.style.cssText = 'width:24px;height:24px;border-radius:50%;background:var(--card2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer';
+    del.innerHTML = '<svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="var(--t2)" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
+    del.addEventListener('click', function() { removeEventNote(i); });
+    hdr.appendChild(ttl);
+    hdr.appendChild(del);
+    card.appendChild(hdr);
+    if (n.body) {
+      var body = document.createElement('div');
+      body.style.cssText = 'font-size:13px;color:var(--t2);line-height:1.6';
+      body.textContent = n.body;
+      card.appendChild(body);
+    }
+    c.appendChild(card);
+  });
+}
+
+function removeEventNote(i) {
+  var key = currentEvent ? currentEvent.name : '';
+  if (eventNotes[key]) eventNotes[key].splice(i, 1);
+  renderEventNotes();
+  toast(tr('removed'));
+}
+
+// ── AUTH TABS ──
+function switchAuthTab(tab) {
+  var isSignup = tab === 'signup';
+  document.getElementById('tab-signup').style.background = isSignup ? 'var(--card)' : 'transparent';
+  document.getElementById('tab-signup').style.color = isSignup ? 'var(--t1)' : 'var(--t2)';
+  document.getElementById('tab-signup').style.fontWeight = isSignup ? '600' : '500';
+  document.getElementById('tab-signup').style.boxShadow = isSignup ? 'var(--shadow)' : 'none';
+  document.getElementById('tab-signin').style.background = !isSignup ? 'var(--card)' : 'transparent';
+  document.getElementById('tab-signin').style.color = !isSignup ? 'var(--t1)' : 'var(--t2)';
+  document.getElementById('tab-signin').style.fontWeight = !isSignup ? '600' : '500';
+  document.getElementById('tab-signin').style.boxShadow = !isSignup ? 'var(--shadow)' : 'none';
+  document.getElementById('form-signup').style.display = isSignup ? 'flex' : 'none';
+  document.getElementById('form-signin').style.display = !isSignup ? 'flex' : 'none';
+}
+
+// ── SIGN UP ──
+async function handleSignUp() {
+  var name = document.getElementById('su-name').value.trim();
+  var email = document.getElementById('su-email').value.trim();
+  var password = document.getElementById('su-password').value;
+  var biz = document.getElementById('su-biz').value.trim();
+
+  if (!name || !email || !password) { toast('Please fill all fields'); return; }
+  if (password.length < 6) { toast('Password min 6 characters'); return; }
+
+  toast('Creating account...');
+
+  try {
+    var result = await sb.auth.signUp({ email: email, password: password });
+    if (result.error) { toast('Error: ' + result.error.message); return; }
+
+    var user = result.data.user;
+    if (user) {
+      // Save profile
+      await sb.from('profiles').upsert({
+        id: user.id,
+        email: email,
+        full_name: name,
+        business_name: biz,
+        country_code: country.code || 'SA',
+        language_code: lang || 'en'
+      });
+
+      // Update UI
+      userData.name = name;
+      userData.email = email;
+      userData.biz = biz;
+      document.getElementById('userName').textContent = name;
+      document.getElementById('profileName').textContent = name;
+      document.getElementById('profileEmail').textContent = email;
+      document.getElementById('profileBiz').textContent = biz;
+      var av = document.getElementById('profileAvatar');
+      if (av) av.innerHTML = '<span style="font-size:24px;font-weight:700;color:#fff">' + name[0].toUpperCase() + '</span>';
+    }
+
+    // Store temp data for onboarding
+    userData.name = name;
+    userData.email = email;
+    userData.biz = biz;
+    userData.userId = user.id;
+    
+    // Go to onboarding flow
+    go('s-lang-select');
+    toast('Welcome! Let\'s set up your account');
+  } catch(e) {
+    toast('Error: ' + e.message);
+  }
+}
+
+// ── SIGN IN ──
+async function handleSignIn() {
+  var email = document.getElementById('si-email').value.trim();
+  var password = document.getElementById('si-password').value;
+
+  if (!email || !password) { toast('Please enter email and password'); return; }
+
+  toast('Signing in...');
+
+  try {
+    var result = await sb.auth.signInWithPassword({ email: email, password: password });
+    if (result.error) { toast('Error: ' + result.error.message); return; }
+
+    // Load profile
+    var user = result.data.user;
+    if (user) {
+      var profileResult = await sb.from('profiles').select('*').eq('id', user.id).single();
+      if (profileResult.data) {
+        var p = profileResult.data;
+        userData.name = p.full_name || '';
+        userData.email = p.email || '';
+        userData.biz = p.business_name || '';
+        document.getElementById('userName').textContent = userData.name || 'User';
+        document.getElementById('profileName').textContent = userData.name || 'User';
+        document.getElementById('profileEmail').textContent = userData.email || '—';
+        document.getElementById('profileBiz').textContent = userData.biz || '';
+        var av = document.getElementById('profileAvatar');
+        if (av && userData.name) av.innerHTML = '<span style="font-size:24px;font-weight:700;color:#fff">' + userData.name[0].toUpperCase() + '</span>';
+      }
+      // Load custom events
+      var evResult = await sb.from('custom_events').select('*').eq('user_id', user.id);
+      if (evResult.data && evResult.data.length) {
+        customEvs = evResult.data.map(function(e) {
+          return { name: e.name, date: e.start_date, dateLabel: e.date_label, type: 'custom' };
+        });
+      }
+    }
+
+    document.getElementById('mainNav').style.display = 'flex';
+    renderTimeline();
+    renderUpcoming();
+    updateHero();
+    loadEventsForCountry(country.code);
+    
+    // Check if profile complete
+    if (!userData.name) {
+      go('s-lang-select');
+      toast('Let\'s complete your profile');
+    } else {
+      go('s-home');
+      toast('Welcome back, ' + userData.name + '!');
+    }
+  } catch(e) {
+    toast('Error: ' + e.message);
+  }
+}
+
+// ── INIT ──
+renderLangList();
+renderCountryList();
+updateHero();
+renderTimeline();
+renderUpcoming();
+renderEventNotes();
+
+// Load live events for current country on startup
+loadEventsForCountry(country.code);
+
+// Auto-detect country on load
+autoDetectCountry();
+
+// Hero card click
+var heroCard = document.getElementById('heroCard');
+if (heroCard) {
+  heroCard.addEventListener('click', function() {
+    var evs = allEvs().filter(function(e) { return e.days >= 0; });
+    if (evs.length) openEventDetail(evs[0]);
+  });
+}
+</script>
+
+<!-- COUNTRY CONFIRM OVERLAY -->
+<div id="countryConfirmOverlay" style="display:none;position:fixed;bottom:0;left:0;right:0;z-index:200;padding:0 16px 40px;pointer-events:all">
+  <div style="background:var(--card);border-radius:24px;padding:20px;box-shadow:var(--shadow-lg);border:1.5px solid var(--border)">
+    <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px">
+      <div style="width:48px;height:48px;border-radius:16px;background:var(--green-l);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="1.6" stroke-linecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+      </div>
+      <div style="flex:1">
+        <div style="font-size:13px;color:var(--t2);margin-bottom:2px">We detected your location</div>
+        <div style="display:flex;align-items:center;gap:6px">
+          <span id="confirmFlag" style="font-size:20px">🇸🇦</span>
+          <span id="confirmName" style="font-size:16px;font-weight:600;color:var(--t1)">Saudi Arabia</span>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;gap:10px">
+      <button onclick="var c=document.getElementById('countryConfirmOverlay').getAttribute('data-code');confirmCountry(c)" style="flex:1;padding:13px;background:var(--green);color:#fff;border:none;border-radius:14px;font-family:DM Sans,sans-serif;font-size:14px;font-weight:600;cursor:pointer">Yes, that's right</button>
+      <button onclick="changeCountryFromConfirm()" style="flex:1;padding:13px;background:var(--card2);color:var(--t1);border:1.5px solid var(--border);border-radius:14px;font-family:DM Sans,sans-serif;font-size:14px;font-weight:500;cursor:pointer">Change</button>
+    </div>
+  </div>
+</div>
+
+</body>
+</html>
