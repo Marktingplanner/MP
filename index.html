@@ -170,6 +170,19 @@ async function signIn(email, password) {
 
 async function signOut() {
   await sb.auth.signOut();
+  // Clear all locally cached user data so a different account doesn't see leftovers
+  try {
+    localStorage.removeItem('mp_user');
+    localStorage.removeItem('mp_reminders');
+    localStorage.removeItem('mp_nav_was_open');
+    // Keep mp_lang and mp_country as device-level preferences
+  } catch(e) {}
+  // Clear in-memory state
+  eventReminders = {};
+  eventNotes = {};
+  customEvs = [];
+  userData = { name: '', email: '', phone: '', biz: '', bizType: '' };
+  document.getElementById('mainNav').style.display = 'none';
   go('s-splash');
 }
 
@@ -207,30 +220,101 @@ async function loadUserData() {
     userData.email = profile.email || '';
     userData.phone = profile.phone || '';
     userData.biz = profile.business_name || '';
-    document.getElementById('userName').textContent = userData.name || 'User';
-    document.getElementById('profileName').textContent = userData.name || 'User';
-    document.getElementById('profileEmail').textContent = userData.email || '—';
-    document.getElementById('profilePhone').textContent = userData.phone || '—';
-    document.getElementById('profileBiz').textContent = userData.biz || '';
+    var nameEl = document.getElementById('userName'); if (nameEl) nameEl.textContent = userData.name || 'User';
+    var pNameEl = document.getElementById('profileName'); if (pNameEl) pNameEl.textContent = userData.name || 'User';
+    var pEmailEl = document.getElementById('profileEmail'); if (pEmailEl) pEmailEl.textContent = userData.email || '—';
+    var pPhoneEl = document.getElementById('profilePhone'); if (pPhoneEl) pPhoneEl.textContent = userData.phone || '—';
+    var pBizEl = document.getElementById('profileBiz'); if (pBizEl) pBizEl.textContent = userData.biz || '';
+    // Restore saved language/country from profile if not yet set locally
+    if (profile.language_code && profile.language_code !== lang) {
+      lang = profile.language_code;
+      try { localStorage.setItem('mp_lang', lang); } catch(e) {}
+      var rtl = ['ar','he','fa','ur'];
+      document.documentElement.dir = rtl.indexOf(lang) > -1 ? 'rtl' : 'ltr';
+      document.documentElement.lang = lang;
+      applyAllTranslations();
+    }
+    if (profile.country_code) {
+      var c = COUNTRIES.find(function(x){ return x.code === profile.country_code; });
+      if (c) {
+        country = c;
+        try { localStorage.setItem('mp_country', c.code); } catch(e) {}
+      }
+    }
   }
   // Load custom events
-  const { data: events } = await sb.from('custom_events').select('*').eq('user_id', user.id);
-  if (events && events.length) {
-    customEvs = events.map(function(e) {
-      return { name: e.name, date: e.start_date, dateLabel: e.date_label, type: 'custom' };
-    });
-    renderTimeline();
-    renderUpcoming();
-    updateHero();
-  }
+  try {
+    const { data: events } = await sb.from('custom_events').select('*').eq('user_id', user.id);
+    if (events && events.length) {
+      customEvs = events.map(function(e) {
+        return {
+          name: e.name,
+          date: e.start_date,
+          endDate: e.end_date || null,
+          dateLabel: e.date_label,
+          type: 'custom',
+          dbId: e.id
+        };
+      });
+    }
+  } catch(e) { console.log('Load custom events error:', e); }
+  // Load reminders
+  try {
+    const { data: rems } = await sb.from('reminders').select('*').eq('user_id', user.id);
+    if (rems && rems.length) {
+      eventReminders = {};
+      rems.forEach(function(r) {
+        if (!eventReminders[r.event_name]) eventReminders[r.event_name] = [];
+        eventReminders[r.event_name].push({
+          id: r.id,
+          days: r.remind_days_before || 0,
+          type: 'planning',
+          enabled: r.is_enabled !== false,
+          eventName: r.event_name,
+          eventDate: r.event_date,
+          fired: false
+        });
+      });
+      try { saveRemindersToStorage(); } catch(e) {}
+    }
+  } catch(e) { console.log('Load reminders error:', e); }
+  // Load notes
+  try {
+    const { data: notes } = await sb.from('notes').select('*').eq('user_id', user.id);
+    if (notes && notes.length) {
+      eventNotes = {};
+      notes.forEach(function(n) {
+        if (!eventNotes[n.event_name]) eventNotes[n.event_name] = [];
+        eventNotes[n.event_name].push({
+          dbId: n.id,
+          title: n.title,
+          body: n.body || ''
+        });
+      });
+    }
+  } catch(e) { console.log('Load notes error:', e); }
+  // Render whatever is on screen
+  try { renderTimeline(); renderUpcoming(); updateHero(); renderEventNotes(); } catch(e) {}
+  // Fetch fresh holidays for the current country
+  try { if (country && country.code) loadEventsForCountry(country.code); } catch(e) {}
 }
 
 // Check session on load
 sb.auth.onAuthStateChange(function(event, session) {
-  if (session) {
+  if (event === 'SIGNED_IN' && session) {
     loadUserData();
+    try { localStorage.setItem('mp_nav_was_open', '1'); } catch(e) {}
     document.getElementById('mainNav').style.display = 'flex';
     go('s-home');
+  } else if (event === 'SIGNED_OUT') {
+    try { localStorage.removeItem('mp_nav_was_open'); } catch(e) {}
+    document.getElementById('mainNav').style.display = 'none';
+    go('s-splash');
+  } else if (event === 'INITIAL_SESSION' && session) {
+    // Page reload while still signed in — restore data without navigation jump
+    loadUserData();
+    try { localStorage.setItem('mp_nav_was_open', '1'); } catch(e) {}
+    document.getElementById('mainNav').style.display = 'flex';
   }
 });
 </script>
@@ -604,6 +688,7 @@ sb.auth.onAuthStateChange(function(event, session) {
     <button onclick="setCalFilter('religious',this)" class="cal-f" id="txt-filterReligious" style="padding:8px 18px;border-radius:50px;border:1.5px solid var(--border);background:transparent;color:var(--t2);font-family:DM Sans,sans-serif;font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap">Religious</button>
     <button onclick="setCalFilter('seasonal',this)" class="cal-f" id="txt-filterSeasonal" style="padding:8px 18px;border-radius:50px;border:1.5px solid var(--border);background:transparent;color:var(--t2);font-family:DM Sans,sans-serif;font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap">Seasonal</button>
     <button onclick="setCalFilter('custom',this)" class="cal-f" id="txt-filterCustom" style="padding:8px 18px;border-radius:50px;border:1.5px solid rgba(184,134,11,.3);background:transparent;color:var(--gold);font-family:DM Sans,sans-serif;font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap">Custom</button>
+    <button onclick="setCalFilter('past',this)" class="cal-f" id="txt-filterPast" style="padding:8px 18px;border-radius:50px;border:1.5px solid var(--border);background:transparent;color:var(--t3);font-family:DM Sans,sans-serif;font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap">Past</button>
   </div>
   <div style="padding:0 24px;padding-bottom:24px;flex:1;overflow-y:auto" id="calList"></div>
 </div>
@@ -1175,6 +1260,10 @@ var STRINGS = {
     testSent: '🔔 Test sent',
     confirmDelete: 'Delete this event?',
     addBtn: '+ Add',
+    pastEvents: 'Past',
+    endedBadge: 'Ended',
+    daysAgo: 'days ago',
+    cantBePast: 'Date can\'t be in the past',
     monthsShort: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
   },
   ar: {
@@ -1303,6 +1392,10 @@ var STRINGS = {
     testSent: '🔔 تم الإرسال',
     confirmDelete: 'هل تريد حذف هذا الحدث؟',
     addBtn: '+ إضافة',
+    pastEvents: 'منتهية',
+    endedBadge: 'انتهى',
+    daysAgo: 'يوم مضى',
+    cantBePast: 'لا يمكن اختيار تاريخ في الماضي',
     monthsShort: ['ينا','فبر','مار','أبر','ماي','يون','يول','أغس','سبت','أكت','نوف','ديس'],
   }
 };
@@ -1368,6 +1461,7 @@ function applyAllTranslations() {
     'txt-filterReligious': 'religious',
     'txt-filterSeasonal': 'seasonal',
     'txt-filterCustom': 'custom',
+    'txt-filterPast': 'pastEvents',
     'txt-addReminderBtn': 'addBtn',
     'txt-notesHeader': 'notes',
     'txt-addNoteBtn': 'addNote',
@@ -1448,34 +1542,32 @@ async function fetchCountryEvents(countryCode, year) {
       var events = data.response.holidays.map(function(h) {
         var date = h.date.iso.split('T')[0];
         var eventDate = new Date(date);
-        var days = Math.ceil((eventDate - today) / 86400000);
+        var days = Math.round((eventDate - today) / 86400000);
         
-        // Determine color by type
+        // Normalize Calendarific type to one of our filter keys
+        var rawType = (h.type && h.type[0]) ? h.type[0].toLowerCase() : '';
+        var normType = 'national';
+        if (rawType.indexOf('religious') > -1) normType = 'religious';
+        else if (rawType.indexOf('season') > -1 || rawType.indexOf('observance') > -1) normType = 'seasonal';
+        else if (rawType.indexOf('national') > -1 || rawType.indexOf('public') > -1) normType = 'national';
+        
         var color = 'var(--blue)', bg = 'var(--blue-l)';
-        if (h.type && h.type[0]) {
-          var t = h.type[0].toLowerCase();
-          if (t.includes('national') || t.includes('public')) {
-            color = 'var(--gold)'; bg = 'var(--gold-l)';
-          } else if (t.includes('religious')) {
-            color = 'var(--green)'; bg = 'var(--green-l)';
-          }
-        }
-
+        if (normType === 'national') { color = 'var(--gold)'; bg = 'var(--gold-l)'; }
+        else if (normType === 'religious') { color = 'var(--green)'; bg = 'var(--green-l)'; }
+        else if (normType === 'seasonal') { color = 'var(--blue)'; bg = 'var(--blue-l)'; }
+        
         return {
           name: h.name,
           date: date,
           label: fmtDateShort(new Date(date + 'T12:00:00')),
-          type: h.type ? h.type[0].toLowerCase() : 'national',
+          type: normType,
           color: color,
           bg: bg,
           days: days,
           isCustom: false,
           dim: days > 180
         };
-      })
-      .filter(function(e) { return e.days >= 0; }) // Only future events
-      .sort(function(a,b) { return a.days - b.days; }) // Sort by closest first
-      .slice(0, 15); // Top 15 upcoming
+      });
       
       return events;
     }
@@ -1499,16 +1591,14 @@ async function loadEventsForCountry(countryCode) {
   if (events) allEvents = allEvents.concat(events);
   if (nextEvents) allEvents = allEvents.concat(nextEvents);
   
-  // Remove duplicates by name+date, keep only future events, sort by days
+  // Remove duplicates by name+date — keep BOTH past and future for filtering
   var seen = {};
-  var today = new Date(); today.setHours(0,0,0,0);
-  
   allEvents = allEvents.filter(function(e) {
     var key = e.name + e.date;
     if (seen[key]) return false;
     seen[key] = true;
-    return e.days >= 0;
-  }).sort(function(a,b) { return a.days - b.days; }).slice(0, 15);
+    return true;
+  }).sort(function(a,b) { return a.days - b.days; });
   
   if (allEvents.length > 0) {
     var c = COUNTRIES.find(function(x) { return x.code === countryCode; });
@@ -1517,6 +1607,7 @@ async function loadEventsForCountry(countryCode) {
       renderTimeline();
       renderUpcoming();
       updateHero();
+      if (document.getElementById('s-calendar').classList.contains('active')) renderCalendar();
     }
   }
 }
@@ -1653,6 +1744,7 @@ function confirmCountry(code) {
   var c = COUNTRIES.find(function(x) { return x.code === code; });
   if (c) {
     country = c;
+    try { localStorage.setItem('mp_country', code); } catch(e) {}
     ['homeCountryFlag','profileCountryFlag'].forEach(function(id) {
       var el = document.getElementById(id); if (el) el.textContent = c.flag;
     });
@@ -1802,11 +1894,15 @@ function showCustomDateTime() {
   var section = document.getElementById('customDateTimeSection');
   if (section) {
     section.style.display = 'block';
-    // Set default date to tomorrow
+    // Set default date to tomorrow, and prevent past dates
+    var todayStr = new Date().toISOString().split('T')[0];
     var tomorrow = new Date();
     tomorrow.setDate(tomorrow.getDate() + 1);
     var dateInput = document.getElementById('customReminderDate');
-    if (dateInput) dateInput.value = tomorrow.toISOString().split('T')[0];
+    if (dateInput) {
+      dateInput.value = tomorrow.toISOString().split('T')[0];
+      dateInput.setAttribute('min', todayStr);
+    }
     var timeInput = document.getElementById('customReminderTime');
     if (timeInput) timeInput.value = '09:00';
   }
@@ -1820,6 +1916,27 @@ async function saveReminder() {
   var note = document.getElementById('reminderNote').value.trim();
   var customDate = document.getElementById('customReminderDate') ? document.getElementById('customReminderDate').value : '';
   var customTime = document.getElementById('customReminderTime') ? document.getElementById('customReminderTime').value : '';
+  
+  // For custom reminders, ensure the chosen datetime is in the future
+  if (selectedReminderType === 'custom' && customDate) {
+    var dt = new Date(customDate + 'T' + (customTime || '09:00') + ':00');
+    if (!isNaN(dt.getTime()) && dt.getTime() <= Date.now()) {
+      toast(t('cantBePast'));
+      return;
+    }
+  }
+  
+  // For days-based reminders (1 day, 1 week, etc), make sure the fire time is in the future
+  if (selectedReminderType !== 'custom' && currentEvent && currentEvent.date) {
+    var ed = new Date(currentEvent.date + 'T09:00:00');
+    if (!isNaN(ed.getTime())) {
+      ed.setDate(ed.getDate() - (selectedReminderDays || 0));
+      if (ed.getTime() <= Date.now()) {
+        toast(t('cantBePast'));
+        return;
+      }
+    }
+  }
   
   var reminder = {
     days: selectedReminderDays,
@@ -1842,13 +1959,14 @@ async function saveReminder() {
   try {
     var userResult = await sb.auth.getUser();
     if (userResult.data && userResult.data.user) {
-      await sb.from('reminders').insert({
+      var ins = await sb.from('reminders').insert({
         user_id: userResult.data.user.id,
         event_name: key,
         event_date: currentEvent.date,
         remind_days_before: selectedReminderDays,
         is_enabled: true
-      });
+      }).select().single();
+      if (ins && ins.data && ins.data.id) reminder.id = ins.data.id;
     }
   } catch(e) { console.log('Reminder save error:', e); }
   
@@ -2000,11 +2118,27 @@ function toggleReminder(i) {
   }
 }
 
-function deleteReminder(i) {
+async function deleteReminder(i) {
   var key = currentEvent ? currentEvent.name : '';
-  if (eventReminders[key]) {
+  if (eventReminders[key] && eventReminders[key][i]) {
+    var rem = eventReminders[key][i];
     eventReminders[key].splice(i, 1);
     try { saveRemindersToStorage(); } catch(e) {}
+    // Delete from Supabase
+    try {
+      if (rem && rem.id && typeof rem.id === 'string') {
+        // id from DB (uuid) — delete by id
+        await sb.from('reminders').delete().eq('id', rem.id);
+      } else {
+        var u = await sb.auth.getUser();
+        if (u.data && u.data.user) {
+          await sb.from('reminders').delete()
+            .eq('user_id', u.data.user.id)
+            .eq('event_name', key)
+            .eq('remind_days_before', rem.days);
+        }
+      }
+    } catch(e) { /* silent */ }
     renderReminders();
     toast(t('reminderRemoved'));
   }
@@ -2096,26 +2230,30 @@ function translateEventName(name) {
 }
 
 // ── STATE ──
-var lang = 'en';
+var lang = (typeof _savedLang !== 'undefined') ? _savedLang : (localStorage.getItem('mp_lang') || 'en');
 var country = COUNTRIES[0];
 var customEvs = [];
 var eventNotes = {};
 var currentEvent = null;
 var calFilter = 'all';
 var selBizType = '';
-var userData = {};
+var userData = { name: '', email: '', phone: '', biz: '', bizType: '' };
 
 // ── HELPERS ──
 function calcDays(d) {
   var t = new Date();
   t.setHours(0,0,0,0);
   var target = new Date(d);
-  var diff = Math.ceil((target - t) / 86400000);
-  while (diff < 0) {
-    target.setFullYear(target.getFullYear() + 1);
-    diff = Math.ceil((target - t) / 86400000);
-  }
-  return diff;
+  target.setHours(0,0,0,0);
+  return Math.round((target - t) / 86400000);
+}
+
+// Returns true if the event is over (date is in the past).
+// For events that span multiple days (have an end date), use end date.
+function isEventPast(ev) {
+  if (!ev || !ev.date) return false;
+  var endDate = ev.endDate || ev.date;
+  return calcDays(endDate) < 0;
 }
 
 function allEvs() {
@@ -2167,9 +2305,11 @@ function navTo(i) {
 }
 
 function quickLogin() {
+  try { localStorage.setItem('mp_nav_was_open', '1'); } catch(e) {}
   document.getElementById('mainNav').style.display = 'flex';
   renderTimeline();
   renderUpcoming();
+  updateHero();
   go('s-home');
 }
 
@@ -2204,13 +2344,23 @@ function renderLangList(f) {
 
 function selectLang(code) {
   lang = code;
+  try { localStorage.setItem('mp_lang', code); } catch(e) {}
   var l = LANGS.find(function(x) { return x.code === code; });
   var rtl = ['ar','he','fa','ur'];
   document.documentElement.dir = rtl.indexOf(code) > -1 ? 'rtl' : 'ltr';
+  document.documentElement.lang = code;
   applyAllTranslations();
   renderLangList();
   var manualLangs = ['en','ar','fr','es','de','zh','ja','tr'];
   if (manualLangs.indexOf(code) === -1) translateUI(code);
+  // Persist to user profile when signed in
+  try {
+    sb.auth.getUser().then(function(r) {
+      if (r.data && r.data.user) {
+        sb.from('profiles').update({ language_code: code }).eq('id', r.data.user.id);
+      }
+    });
+  } catch(e) {}
   toast('✓ ' + l.native);
   var navVisible = document.getElementById('mainNav').style.display === 'flex';
   setTimeout(function() {
@@ -2257,6 +2407,7 @@ function selectCountry(code) {
   var c = COUNTRIES.find(function(x) { return x.code === code; });
   if (!c) return;
   country = c;
+  try { localStorage.setItem('mp_country', code); } catch(e) {}
   ['homeCountryFlag','profileCountryFlag'].forEach(function(id) {
     var el = document.getElementById(id); if (el) el.textContent = c.flag;
   });
@@ -2264,11 +2415,34 @@ function selectCountry(code) {
     var el = document.getElementById(id); if (el) el.textContent = c.name;
   });
   renderCountryList();
-  renderTimeline();
-  renderUpcoming();
-  updateHero();
+  // Fetch fresh events for the newly chosen country, then re-render
+  try {
+    loadEventsForCountry(code).then(function() {
+      renderTimeline();
+      renderUpcoming();
+      updateHero();
+      if (document.getElementById('s-calendar').classList.contains('active')) renderCalendar();
+    });
+  } catch(e) {
+    renderTimeline();
+    renderUpcoming();
+    updateHero();
+  }
+  // Persist to user profile when signed in
+  try {
+    sb.auth.getUser().then(function(r) {
+      if (r.data && r.data.user) {
+        sb.from('profiles').update({ country_code: code }).eq('id', r.data.user.id);
+      }
+    });
+  } catch(e) {}
   toast('✓ ' + c.flag + ' ' + c.name);
-  setTimeout(function() { go('s-permissions'); }, 500);
+  // Only advance to permissions on first onboarding, not when changing later
+  var navVisible = document.getElementById('mainNav').style.display === 'flex';
+  setTimeout(function() {
+    if (!navVisible) go('s-permissions');
+    else go('s-home');
+  }, 500);
 }
 
 // ── PERMISSIONS ──
@@ -2475,6 +2649,24 @@ function finishOnboard() {
     av.innerHTML = '<span style="font-size:24px;font-weight:700;color:#fff">' + name[0].toUpperCase() + '</span>';
   }
   try { localStorage.setItem('mp_user', JSON.stringify(userData)); } catch(e) {}
+  try { localStorage.setItem('mp_nav_was_open', '1'); } catch(e) {}
+  // Persist full profile to Supabase (best-effort)
+  try {
+    sb.auth.getUser().then(function(r) {
+      if (r.data && r.data.user) {
+        sb.from('profiles').upsert({
+          id: r.data.user.id,
+          email: userData.email || '',
+          full_name: userData.name || '',
+          phone: userData.phone || '',
+          business_name: userData.biz || '',
+          business_type: userData.bizType || '',
+          country_code: (country && country.code) || 'SA',
+          language_code: lang || 'en'
+        });
+      }
+    });
+  } catch(e) {}
   document.getElementById('mainNav').style.display = 'flex';
   renderTimeline();
   renderUpcoming();
@@ -2485,7 +2677,7 @@ function finishOnboard() {
 
 // ── HERO ──
 function updateHero() {
-  var evs = allEvs().filter(function(e) { return e.days >= 0; });
+  var evs = allEvs().filter(function(e) { return !isEventPast(e); });
   if (!evs.length) return;
   var ev = evs[0];
   var nameEl = document.getElementById('heroName');
@@ -2499,7 +2691,8 @@ function updateHero() {
 // ── EVENT DETAIL ──
 function openEventDetail(ev) {
   currentEvent = ev;
-  var color = ev.isCustom ? 'var(--gold)' : (ev.color || 'var(--green)');
+  var past = isEventPast(ev);
+  var color = past ? 'var(--t3)' : (ev.isCustom ? 'var(--gold)' : (ev.color || 'var(--green)'));
   var titleEl = document.getElementById('detailTitle');
   if (titleEl) titleEl.textContent = translateEventName(ev.name);
   var nameEl = document.getElementById('detailName');
@@ -2507,11 +2700,39 @@ function openEventDetail(ev) {
   var dateEl = document.getElementById('detailDate');
   if (dateEl) dateEl.textContent = ev.label || ev.dateLabel || '';
   var daysEl = document.getElementById('detailDays');
-  if (daysEl) daysEl.textContent = ev.days > 0 ? ev.days : t('today');
+  if (daysEl) {
+    if (past) {
+      daysEl.textContent = Math.abs(ev.days);
+    } else {
+      daysEl.textContent = ev.days > 0 ? ev.days : t('today');
+    }
+  }
+  // Swap the "days left" label for "days ago" on past events
+  var daysLeftLabel = document.getElementById('txt-detailDaysLeft');
+  if (daysLeftLabel) {
+    daysLeftLabel.textContent = past ? t('daysAgo') : t('daysLeft');
+  }
   var card = document.getElementById('detailHeroCard');
   if (card) card.style.background = color;
   var badge = document.getElementById('detailCustomBadge');
-  if (badge) badge.style.display = ev.isCustom ? 'inline-block' : 'none';
+  if (badge) {
+    if (past) {
+      badge.style.display = 'inline-block';
+      badge.textContent = t('endedBadge');
+      badge.style.color = '#fff';
+      badge.style.background = 'rgba(255,255,255,.2)';
+    } else if (ev.isCustom) {
+      badge.style.display = 'inline-block';
+      badge.textContent = t('customBadge');
+      badge.style.color = 'var(--gold)';
+      badge.style.background = 'var(--gold-l)';
+    } else {
+      badge.style.display = 'none';
+    }
+  }
+  // Hide Add Reminder button for past events — no point scheduling a past notification
+  var addReminderBtn = document.getElementById('txt-addReminderBtn');
+  if (addReminderBtn) addReminderBtn.style.display = past ? 'none' : '';
   renderEventNotes();
   renderReminders();
   go('s-event-detail');
@@ -2522,7 +2743,7 @@ function renderTimeline() {
   var row = document.getElementById('timelineRow');
   if (!row) return;
   row.innerHTML = '';
-  var evs = allEvs();
+  var evs = allEvs().filter(function(e) { return !isEventPast(e); });
   evs.forEach(function(ev, i) {
     if (i > 0) {
       var conn = document.createElement('div');
@@ -2605,7 +2826,7 @@ function renderUpcoming() {
   var c = document.getElementById('upcomingList');
   if (!c) return;
   c.innerHTML = '';
-  var evs = allEvs().filter(function(e) { return e.days >= 0; }).slice(0, 5);
+  var evs = allEvs().filter(function(e) { return !isEventPast(e); }).slice(0, 5);
   evs.forEach(function(ev, i) {
     var div = document.createElement('div');
     div.style.cssText = 'background:var(--card);border:1.5px solid var(--border);border-radius:18px;padding:16px;cursor:pointer;display:flex;align-items:center;gap:14px;box-shadow:var(--shadow);margin-bottom:10px';
@@ -2651,29 +2872,44 @@ function renderCalendar() {
   if (!c) return;
   c.innerHTML = '';
   var evs = allEvs().filter(function(e) {
-    return calFilter === 'all' || e.type === calFilter || (calFilter === 'custom' && e.isCustom);
+    if (calFilter === 'past') return isEventPast(e);
+    var typeMatch = calFilter === 'all' || e.type === calFilter || (calFilter === 'custom' && e.isCustom);
+    if (!typeMatch) return false;
+    // Default: hide past events from non-past filters
+    return !isEventPast(e);
+  });
+  // Sort: upcoming by closest first; past by most recent first
+  evs.sort(function(a,b){
+    if (calFilter === 'past') return b.days - a.days; // closest past first (e.g. -1, -2, ...)
+    return a.days - b.days;
   });
   if (!evs.length) {
     c.innerHTML = '<div style="text-align:center;padding:48px 0;color:var(--t3)">' + t('noEvents') + '</div>';
     return;
   }
   evs.forEach(function(ev) {
+    var past = isEventPast(ev);
     var div = document.createElement('div');
-    div.style.cssText = 'background:var(--card);border:1.5px solid var(--border);border-radius:18px;padding:16px;margin-bottom:10px;display:flex;align-items:center;gap:14px;cursor:pointer;box-shadow:var(--shadow)';
+    div.style.cssText = 'background:var(--card);border:1.5px solid var(--border);border-radius:18px;padding:16px;margin-bottom:10px;display:flex;align-items:center;gap:14px;cursor:pointer;box-shadow:var(--shadow);' + (past ? 'opacity:0.6;' : '');
 
     var icon = document.createElement('div');
-    icon.style.cssText = 'width:52px;height:52px;border-radius:16px;background:' + ev.bg + ';display:flex;align-items:center;justify-content:center;flex-shrink:0';
-    icon.innerHTML = '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="' + ev.color + '" stroke-width="1.6" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/></svg>';
+    icon.style.cssText = 'width:52px;height:52px;border-radius:16px;background:' + (past ? 'var(--card2)' : ev.bg) + ';display:flex;align-items:center;justify-content:center;flex-shrink:0';
+    icon.innerHTML = '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="' + (past ? 'var(--t3)' : ev.color) + '" stroke-width="1.6" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/></svg>';
 
     var info = document.createElement('div');
-    info.style.cssText = 'flex:1';
+    info.style.cssText = 'flex:1;min-width:0';
     var row1 = document.createElement('div');
-    row1.style.cssText = 'display:flex;align-items:center;gap:6px;margin-bottom:3px';
+    row1.style.cssText = 'display:flex;align-items:center;gap:6px;margin-bottom:3px;flex-wrap:wrap';
     var evName = document.createElement('div');
-    evName.style.cssText = 'font-size:15px;font-weight:600;color:var(--t1)';
+    evName.style.cssText = 'font-size:15px;font-weight:600;color:' + (past ? 'var(--t2)' : 'var(--t1)');
     evName.textContent = translateEventName(ev.name);
     row1.appendChild(evName);
-    if (ev.isCustom) {
+    if (past) {
+      var pastBadge = document.createElement('span');
+      pastBadge.style.cssText = 'font-size:10px;font-weight:600;color:var(--t3);background:var(--card2);border:1px solid var(--border);padding:2px 8px;border-radius:50px';
+      pastBadge.textContent = t('endedBadge');
+      row1.appendChild(pastBadge);
+    } else if (ev.isCustom) {
       var badge = document.createElement('span');
       badge.style.cssText = 'font-size:10px;font-weight:600;color:var(--gold);background:var(--gold-l);padding:2px 8px;border-radius:50px';
       badge.textContent = t('customBadge');
@@ -2686,13 +2922,22 @@ function renderCalendar() {
     info.appendChild(evSub);
 
     var daysDiv = document.createElement('div');
-    daysDiv.style.cssText = 'text-align:center;flex-shrink:0';
+    daysDiv.style.cssText = 'text-align:center;flex-shrink:0;min-width:48px';
     var dNum = document.createElement('div');
-    dNum.style.cssText = 'font-size:20px;font-weight:700;color:' + ev.color + ';line-height:1';
-    dNum.textContent = ev.days > 0 ? ev.days : t('today');
+    dNum.style.cssText = 'font-size:' + (past ? '14' : '20') + 'px;font-weight:700;color:' + (past ? 'var(--t3)' : ev.color) + ';line-height:1';
+    if (past) {
+      var daysAgo = Math.abs(ev.days);
+      dNum.textContent = daysAgo;
+    } else {
+      dNum.textContent = ev.days > 0 ? ev.days : t('today');
+    }
     var dLbl = document.createElement('div');
-    dLbl.style.cssText = 'font-size:10px;color:var(--t2);margin-top:2px';
-    dLbl.textContent = t('days');
+    dLbl.style.cssText = 'font-size:10px;color:var(--t3);margin-top:2px';
+    if (past) {
+      dLbl.textContent = t('daysAgo');
+    } else {
+      dLbl.textContent = ev.days > 0 ? t('days') : '';
+    }
     daysDiv.appendChild(dNum);
     daysDiv.appendChild(dLbl);
 
@@ -2711,16 +2956,32 @@ function setCalFilter(type, btn) {
     b.style.color = 'var(--t2)';
     b.style.borderColor = 'var(--border)';
   });
-  btn.style.background = type === 'custom' ? 'var(--gold-l)' : 'var(--green)';
-  btn.style.color = type === 'custom' ? 'var(--gold)' : '#fff';
-  btn.style.borderColor = type === 'custom' ? 'rgba(184,134,11,.3)' : 'var(--green)';
+  if (type === 'custom') {
+    btn.style.background = 'var(--gold-l)';
+    btn.style.color = 'var(--gold)';
+    btn.style.borderColor = 'rgba(184,134,11,.3)';
+  } else if (type === 'past') {
+    btn.style.background = 'var(--card2)';
+    btn.style.color = 'var(--t1)';
+    btn.style.borderColor = 'var(--t3)';
+  } else {
+    btn.style.background = 'var(--green)';
+    btn.style.color = '#fff';
+    btn.style.borderColor = 'var(--green)';
+  }
   renderCalendar();
 }
 
 // ── CUSTOM EVENT ──
 function showAddSheet() {
-  document.getElementById('evStart').value = new Date().toISOString().split('T')[0];
-  document.getElementById('evEnd').value = '';
+  var todayStr = new Date().toISOString().split('T')[0];
+  var startEl = document.getElementById('evStart');
+  var endEl = document.getElementById('evEnd');
+  startEl.value = todayStr;
+  endEl.value = '';
+  // Prevent picking a date in the past via the native picker
+  startEl.setAttribute('min', todayStr);
+  endEl.setAttribute('min', todayStr);
   document.getElementById('evName').value = '';
   document.getElementById('addSheet').classList.add('show');
 }
@@ -2731,25 +2992,35 @@ async function addCustomEvent() {
   var name = document.getElementById('evName').value.trim();
   var start = document.getElementById('evStart').value;
   if (!name || !start) { toast(t('enterNameDate')); return; }
+  // Block past dates (defensive — `min` attr already covers most cases)
+  var today = new Date(); today.setHours(0,0,0,0);
+  var sd = new Date(start); sd.setHours(0,0,0,0);
+  if (sd.getTime() < today.getTime()) { toast(t('cantBePast')); return; }
   var end = document.getElementById('evEnd').value;
-  var sd = new Date(start);
+  if (end) {
+    var endDt = new Date(end); endDt.setHours(0,0,0,0);
+    if (endDt.getTime() < sd.getTime()) { toast(t('cantBePast')); return; }
+  }
   var M = t('monthsShort');
   if (!Array.isArray(M)) M = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   var lbl = sd.getDate() + ' ' + M[sd.getMonth()];
   if (end) { var ed = new Date(end); lbl += ' - ' + ed.getDate() + ' ' + M[ed.getMonth()]; }
-  var ev = {name: name, dateLabel: lbl, date: start, type: 'custom'};
+  var ev = {name: name, dateLabel: lbl, date: start, endDate: end || null, type: 'custom'};
   customEvs.push(ev);
   // Save to Supabase
   try {
     var userResult = await sb.auth.getUser();
     if (userResult.data && userResult.data.user) {
-      await sb.from('custom_events').insert({
+      var ins = await sb.from('custom_events').insert({
         user_id: userResult.data.user.id,
         name: name,
         start_date: start,
         end_date: end || null,
         date_label: lbl
-      });
+      }).select().single();
+      if (ins && ins.data && ins.data.id) {
+        ev.dbId = ins.data.id;
+      }
     }
   } catch(e) { console.log('Save error:', e); }
   renderTimeline();
@@ -2778,9 +3049,35 @@ async function removeCustomEvent(idx) {
       }
     }
   } catch(e) { /* silent */ }
+  // Also clean up any reminders/notes tied to this event name (local + remote)
+  if (removed && removed.name) {
+    var key = removed.name;
+    if (eventReminders[key]) {
+      delete eventReminders[key];
+      try { saveRemindersToStorage(); } catch(e) {}
+      try {
+        var u = await sb.auth.getUser();
+        if (u.data && u.data.user) {
+          await sb.from('reminders').delete()
+            .eq('user_id', u.data.user.id).eq('event_name', key);
+        }
+      } catch(e) {}
+    }
+    if (eventNotes[key]) {
+      delete eventNotes[key];
+      try {
+        var u2 = await sb.auth.getUser();
+        if (u2.data && u2.data.user) {
+          await sb.from('notes').delete()
+            .eq('user_id', u2.data.user.id).eq('event_name', key);
+        }
+      } catch(e) {}
+    }
+  }
   renderTimeline();
   renderUpcoming();
   updateHero();
+  if (document.getElementById('s-calendar').classList.contains('active')) renderCalendar();
   toast(t('removed'));
 }
 
@@ -2805,12 +3102,13 @@ async function addNote() {
   try {
     var userResult = await sb.auth.getUser();
     if (userResult.data && userResult.data.user) {
-      await sb.from('notes').insert({
+      var ins = await sb.from('notes').insert({
         user_id: userResult.data.user.id,
         event_name: key,
         title: title,
         body: note.body || ''
-      });
+      }).select().single();
+      if (ins && ins.data && ins.data.id) note.dbId = ins.data.id;
     }
   } catch(e) { console.log('Note save error:', e); }
   renderEventNotes();
@@ -2870,11 +3168,27 @@ function renderEventNotes() {
   });
 }
 
-function removeEventNote(i) {
+async function removeEventNote(i) {
   var key = currentEvent ? currentEvent.name : '';
-  if (eventNotes[key]) eventNotes[key].splice(i, 1);
-  renderEventNotes();
-  toast(t('removed'));
+  if (eventNotes[key] && eventNotes[key][i]) {
+    var n = eventNotes[key][i];
+    eventNotes[key].splice(i, 1);
+    try {
+      if (n && n.dbId) {
+        await sb.from('notes').delete().eq('id', n.dbId);
+      } else {
+        var u = await sb.auth.getUser();
+        if (u.data && u.data.user) {
+          await sb.from('notes').delete()
+            .eq('user_id', u.data.user.id)
+            .eq('event_name', key)
+            .eq('title', n.title);
+        }
+      }
+    } catch(e) { /* silent */ }
+    renderEventNotes();
+    toast(t('removed'));
+  }
 }
 
 // ── AUTH TABS ──
@@ -2909,35 +3223,26 @@ async function handleSignUp() {
     if (result.error) { toast(t('errorPrefix') + result.error.message); return; }
 
     var user = result.data.user;
-    if (user) {
-      // Save profile
-      await sb.from('profiles').upsert({
-        id: user.id,
-        email: email,
-        full_name: name,
-        business_name: biz,
-        country_code: country.code || 'SA',
-        language_code: lang || 'en'
-      });
-
-      // Update UI
-      userData.name = name;
-      userData.email = email;
-      userData.biz = biz;
-      document.getElementById('userName').textContent = name;
-      document.getElementById('profileName').textContent = name;
-      document.getElementById('profileEmail').textContent = email;
-      document.getElementById('profileBiz').textContent = biz;
-      var av = document.getElementById('profileAvatar');
-      if (av) av.innerHTML = '<span style="font-size:24px;font-weight:700;color:#fff">' + name[0].toUpperCase() + '</span>';
-    }
-
-    // Store temp data for onboarding
+    // Stash for onboarding step
     userData.name = name;
     userData.email = email;
     userData.biz = biz;
-    userData.userId = user.id;
-    
+    if (user) userData.userId = user.id;
+
+    if (user) {
+      // Save initial profile (best-effort)
+      try {
+        await sb.from('profiles').upsert({
+          id: user.id,
+          email: email,
+          full_name: name,
+          business_name: biz,
+          country_code: country.code || 'SA',
+          language_code: lang || 'en'
+        });
+      } catch(e) { /* silent */ }
+    }
+
     // Go to onboarding flow
     go('s-lang-select');
     toast(t('welcomeStart'));
@@ -2958,56 +3263,26 @@ async function handleSignIn() {
   try {
     var result = await sb.auth.signInWithPassword({ email: email, password: password });
     if (result.error) { toast(t('errorPrefix') + result.error.message); return; }
-
-    // Load profile
-    var user = result.data.user;
-    if (user) {
-      var profileResult = await sb.from('profiles').select('*').eq('id', user.id).single();
-      if (profileResult.data) {
-        var p = profileResult.data;
-        userData.name = p.full_name || '';
-        userData.email = p.email || '';
-        userData.biz = p.business_name || '';
-        document.getElementById('userName').textContent = userData.name || 'User';
-        document.getElementById('profileName').textContent = userData.name || 'User';
-        document.getElementById('profileEmail').textContent = userData.email || '—';
-        document.getElementById('profileBiz').textContent = userData.biz || '';
-        var av = document.getElementById('profileAvatar');
-        if (av && userData.name) av.innerHTML = '<span style="font-size:24px;font-weight:700;color:#fff">' + userData.name[0].toUpperCase() + '</span>';
-      }
-      // Load custom events
-      var evResult = await sb.from('custom_events').select('*').eq('user_id', user.id);
-      if (evResult.data && evResult.data.length) {
-        customEvs = evResult.data.map(function(e) {
-          return { name: e.name, date: e.start_date, dateLabel: e.date_label, type: 'custom' };
-        });
-      }
-    }
-
-    document.getElementById('mainNav').style.display = 'flex';
-    renderTimeline();
-    renderUpcoming();
-    updateHero();
-    loadEventsForCountry(country.code);
-    
-    // Check if profile complete
-    if (!userData.name) {
-      go('s-lang-select');
-      toast(t('welcomeStart'));
-    } else {
-      go('s-home');
-      toast(t('welcomeBackName') + userData.name + '!');
-    }
+    // onAuthStateChange ('SIGNED_IN') will handle loadUserData + nav + redirect to s-home
+    // Just show a personalized greeting after data loads
+    setTimeout(function() {
+      if (userData.name) toast(t('welcomeBackName') + userData.name + '!');
+    }, 600);
   } catch(e) {
     toast(t('errorPrefix') + e.message);
   }
 }
 
 // ── INIT ──
-// Read saved language
+// Read saved language, country, and nav state
 try {
   var savedLang = localStorage.getItem('mp_lang');
   if (savedLang) lang = savedLang;
+  var savedCountry = localStorage.getItem('mp_country');
+  if (savedCountry) {
+    var c = COUNTRIES.find(function(x){ return x.code === savedCountry; });
+    if (c) country = c;
+  }
   var navWasOpen = localStorage.getItem('mp_nav_was_open');
   if (navWasOpen === '1') {
     document.getElementById('mainNav').style.display = 'flex';
