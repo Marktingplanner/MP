@@ -117,6 +117,10 @@ html,body{width:100%;height:100%;overflow:hidden;background:#E8E5DF;font-family:
 /* MISC */
 .bk{width:40px;height:40px;background:var(--card);border:1.5px solid var(--border);border-radius:14px;display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0}
 .bk svg{width:18px;height:18px;stroke:var(--t1);fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.acc-section-hdr{font-size:11px;font-weight:600;color:var(--t3);letter-spacing:1px;text-transform:uppercase;padding:0 4px 8px;margin-top:4px}
+.acc-row{transition:background .15s}
+.acc-row-tap:active{background:var(--card2)}
+.acc-row-icon{width:34px;height:34px;border-radius:10px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .hbtn{width:40px;height:40px;background:var(--card);border:1.5px solid var(--border);border-radius:14px;display:flex;align-items:center;justify-content:center;cursor:pointer;position:relative}
 .hbtn svg{width:18px;height:18px;stroke:var(--t1);fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
 .dot{width:8px;height:8px;border-radius:50%;background:var(--green-m);position:absolute;top:6px;right:6px;border:2px solid var(--card)}
@@ -131,8 +135,19 @@ html,body{width:100%;height:100%;overflow:hidden;background:#E8E5DF;font-family:
 .toggle{width:46px;height:26px;border-radius:13px;background:var(--border);position:relative;cursor:pointer;transition:background .3s;flex-shrink:0}
 .toggle::after{content:'';position:absolute;width:20px;height:20px;border-radius:50%;background:#fff;top:3px;right:3px;transition:transform .3s;box-shadow:0 1px 4px rgba(0,0,0,.15)}
 .toggle.on{background:var(--green)}.toggle.on::after{transform:translateX(-20px)}
+.acc-section-hdr{font-size:11px;font-weight:600;color:var(--t3);letter-spacing:1px;padding:0 4px 8px;text-transform:uppercase}
+.acc-row{transition:background .15s}
+.acc-row-tap:active{background:var(--card2)}
+.acc-row-icon{width:36px;height:36px;border-radius:11px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+[dir="rtl"] .toggle.on::after{transform:translateX(20px)}
+/* Pulsing TODAY badge */
+.today-badge{display:inline-flex;align-items:center;gap:5px;background:var(--green);color:#fff;font-size:10px;font-weight:700;letter-spacing:.6px;padding:3px 9px;border-radius:50px;text-transform:uppercase}
+.today-badge::before{content:'';width:6px;height:6px;border-radius:50%;background:#fff;animation:pulse-dot 1.5s infinite}
+@keyframes pulse-dot{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(1.3)}}
 @keyframes fadeUp{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
 @keyframes pulse{0%,100%{opacity:1}50%{opacity:.5}}
+@keyframes fadeIn{from{opacity:0}to{opacity:1}}
+@keyframes popIn{from{opacity:0;transform:scale(.92)}to{opacity:1;transform:scale(1)}}
 </style>
 
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
@@ -311,10 +326,11 @@ sb.auth.onAuthStateChange(function(event, session) {
     document.getElementById('mainNav').style.display = 'none';
     go('s-splash');
   } else if (event === 'INITIAL_SESSION' && session) {
-    // Page reload while still signed in — restore data without navigation jump
+    // Page reload while still signed in — restore data and skip the marketing splash
     loadUserData();
     try { localStorage.setItem('mp_nav_was_open', '1'); } catch(e) {}
     document.getElementById('mainNav').style.display = 'flex';
+    go('s-home');
   }
 });
 </script>
@@ -651,7 +667,7 @@ sb.auth.onAuthStateChange(function(event, session) {
 
   <!-- TIMELINE -->
   <div style="padding:0 24px;display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-shrink:0">
-    <div id="txt-allEvents" style="font-size:13px;font-weight:600;color:var(--t2);letter-spacing:.3px">All Events</div>
+    <div id="txt-allEvents" style="font-size:13px;font-weight:600;color:var(--t1);letter-spacing:.3px">Up Next</div>
     <div onclick="showAddSheet()" style="display:flex;align-items:center;gap:5px;background:var(--gold-l);border:1.5px solid rgba(184,134,11,.2);border-radius:50px;padding:6px 14px;cursor:pointer">
       <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
       <span id="txt-addCustom" style="font-size:12px;font-weight:600;color:var(--gold)">Add Custom</span>
@@ -666,7 +682,7 @@ sb.auth.onAuthStateChange(function(event, session) {
 
   <!-- UPCOMING -->
   <div style="padding:0 24px;display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-shrink:0">
-    <div id="txt-comingUp" style="font-size:13px;font-weight:600;color:var(--t2);letter-spacing:.3px">Coming Up</div>
+    <div id="txt-comingUp" style="font-size:13px;font-weight:600;color:var(--t1);letter-spacing:.3px">Coming Up</div>
     <span id="txt-viewAll" onclick="navTo(1)" style="font-size:12px;font-weight:600;color:var(--green);cursor:pointer">View all</span>
   </div>
   <div style="padding:0 24px;padding-bottom:24px;display:flex;flex-direction:column;gap:10px" id="upcomingList"></div>
@@ -738,100 +754,139 @@ sb.auth.onAuthStateChange(function(event, session) {
     <div id="txt-account" style="font-family:'DM Serif Display',serif;font-size:24px;color:var(--t1)">Account</div>
   </div>
   <div style="padding:0 24px;padding-bottom:24px;overflow-y:auto;flex:1">
-    <!-- Avatar -->
-    <div style="background:var(--green);border-radius:24px;padding:24px;margin-bottom:16px;display:flex;align-items:center;gap:16px">
+    <!-- Profile Card -->
+    <div style="background:var(--green);border-radius:24px;padding:24px;margin-bottom:20px;display:flex;align-items:center;gap:16px">
       <div id="profileAvatar" style="width:64px;height:64px;border-radius:20px;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;flex-shrink:0">
         <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="1.5" stroke-linecap="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
       </div>
-      <div>
-        <div id="profileName" style="font-family:'DM Serif Display',serif;font-size:20px;color:#fff">—</div>
-        <div id="profileBiz" style="font-size:13px;color:rgba(255,255,255,.75);margin-top:3px">—</div>
-        <div style="font-size:11px;font-weight:600;color:rgba(255,255,255,.6);margin-top:6px;background:rgba(255,255,255,.15);display:inline-block;padding:3px 10px;border-radius:50px">Free Plan</div>
-      </div>
-    </div>
-    <!-- Info -->
-    <div style="background:var(--card);border:1.5px solid var(--border);border-radius:20px;overflow:hidden;margin-bottom:12px">
-      <div style="padding:16px;border-bottom:1px solid var(--border)">
-        <div class="lbl" style="margin-bottom:4px">Email</div>
-        <div id="profileEmail" style="font-size:14px;color:var(--t1)">—</div>
-      </div>
-      <div style="padding:16px;border-bottom:1px solid var(--border)">
-        <div class="lbl" style="margin-bottom:4px">Phone</div>
-        <div id="profilePhone" style="font-size:14px;color:var(--t1)">—</div>
-      </div>
-      <div style="padding:16px">
-        <div class="lbl" style="margin-bottom:4px">Country</div>
-        <div style="display:flex;align-items:center;gap:8px">
-          <span id="profileCountryFlag" style="font-size:18px">🇸🇦</span>
-          <span id="profileCountryName" style="font-size:14px;color:var(--t1)">Saudi Arabia</span>
-        </div>
-      </div>
-    </div>
-    <!-- Feedback Card -->
-    <div style="background:var(--card);border:1.5px solid var(--border);border-radius:20px;overflow:hidden;margin-bottom:12px">
-      <div style="padding:16px 16px 12px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="1.7" stroke-linecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 0 2 2z"/></svg>
-        <div style="font-size:15px;font-weight:600;color:var(--t1)" id="txt-feedbackTitle">Feedback & Suggestions</div>
-      </div>
-      <div style="padding:16px">
-        <div style="font-size:13px;color:var(--t2);margin-bottom:12px">Help us improve! Share your thoughts, ideas or report issues.</div>
-        <div style="margin-bottom:10px">
-          <div class="lbl" style="margin-bottom:6px">Type</div>
-          <div style="display:flex;gap:8px">
-            <div onclick="setFeedbackType(this,'suggestion')" class="fb-type" style="flex:1;padding:8px;border-radius:12px;border:1.5px solid var(--green);background:var(--green-l);text-align:center;font-size:12px;font-weight:600;color:var(--green);cursor:pointer">💡 Suggestion</div>
-            <div onclick="setFeedbackType(this,'bug')" class="fb-type" style="flex:1;padding:8px;border-radius:12px;border:1.5px solid var(--border);background:transparent;text-align:center;font-size:12px;font-weight:500;color:var(--t2);cursor:pointer">🐛 Bug Report</div>
-            <div onclick="setFeedbackType(this,'other')" class="fb-type" style="flex:1;padding:8px;border-radius:12px;border:1.5px solid var(--border);background:transparent;text-align:center;font-size:12px;font-weight:500;color:var(--t2);cursor:pointer">💬 Other</div>
-          </div>
-        </div>
-        <div style="margin-bottom:12px">
-          <div class="lbl" style="margin-bottom:6px">Message</div>
-          <textarea id="feedbackText" class="inp" style="height:80px;resize:none" placeholder="Write your feedback here..."></textarea>
-        </div>
-        <button onclick="submitFeedback()" style="width:100%;padding:13px;background:var(--green);color:#fff;border:none;border-radius:14px;font-family:DM Sans,sans-serif;font-size:14px;font-weight:600;cursor:pointer" id="txt-sendFeedback">Send Feedback</button>
+      <div style="flex:1;min-width:0">
+        <div id="profileName" style="font-family:'DM Serif Display',serif;font-size:20px;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">—</div>
+        <div id="profileBiz" style="font-size:13px;color:rgba(255,255,255,.75);margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">—</div>
       </div>
     </div>
 
-    <!-- Notifications Card -->
-    <div style="background:var(--card);border:1.5px solid var(--border);border-radius:20px;overflow:hidden;margin-bottom:12px">
-      <div style="padding:16px;display:flex;align-items:center;gap:12px">
-        <div style="width:40px;height:40px;border-radius:12px;background:var(--green-l);display:flex;align-items:center;justify-content:center;flex-shrink:0">
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+    <!-- SECTION: PREFERENCES -->
+    <div class="acc-section-hdr" id="txt-prefsHeader">PREFERENCES</div>
+    <div style="background:var(--card);border:1.5px solid var(--border);border-radius:20px;overflow:hidden;margin-bottom:20px">
+      <!-- Notifications row -->
+      <div class="acc-row" style="padding:14px 16px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border)">
+        <div class="acc-row-icon" style="background:var(--green-l)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
         </div>
         <div style="flex:1;min-width:0">
-          <div style="font-size:15px;font-weight:600;color:var(--t1);margin-bottom:2px" id="txt-notifSectionTitle">Notifications</div>
-          <div style="font-size:12px;color:var(--t2);line-height:1.4" id="txt-notifSectionDesc">Get reminders before important dates</div>
-          <div style="font-size:11px;font-weight:600;color:var(--t3);margin-top:4px"><span id="notifStatusLabel">Off</span></div>
+          <div style="font-size:14px;font-weight:500;color:var(--t1)" id="txt-notifSectionTitle">Notifications</div>
+          <div style="font-size:11px;color:var(--t3);margin-top:2px"><span id="notifStatusLabel">Off</span></div>
         </div>
         <button id="notifToggle" class="toggle" onclick="enableNotifications()" aria-label="Enable notifications" style="border:none;padding:0"></button>
       </div>
-      <div style="padding:0 16px 14px">
-        <button onclick="sendTestNotification()" id="txt-sendTestBtn" style="width:100%;padding:10px;background:var(--card2);color:var(--t1);border:1.5px solid var(--border);border-radius:12px;font-family:DM Sans,sans-serif;font-size:13px;font-weight:600;cursor:pointer">🔔 Send test notification</button>
+      <!-- Test notification (only shows when notifications enabled) -->
+      <div id="notifTestRow" class="acc-row acc-row-tap" onclick="sendTestNotification()" style="padding:14px 16px;display:none;align-items:center;gap:12px;border-bottom:1px solid var(--border);cursor:pointer">
+        <div class="acc-row-icon" style="background:var(--card2)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--t2)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+        </div>
+        <span style="font-size:14px;color:var(--t1);flex:1" id="txt-sendTestBtn">Send test notification</span>
+      </div>
+      <!-- Country row -->
+      <div class="acc-row acc-row-tap" onclick="go('s-country-select')" style="padding:14px 16px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border);cursor:pointer">
+        <div class="acc-row-icon" style="background:var(--gold-l)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.7" stroke-linecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+        </div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:14px;font-weight:500;color:var(--t1)" id="txt-changeCountry">Country</div>
+          <div style="font-size:11px;color:var(--t3);margin-top:2px;display:flex;align-items:center;gap:5px">
+            <span id="profileCountryFlag">🇸🇦</span>
+            <span id="profileCountryName">Saudi Arabia</span>
+          </div>
+        </div>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--t3)" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+      </div>
+      <!-- Language row -->
+      <div class="acc-row acc-row-tap" onclick="go('s-lang-select')" style="padding:14px 16px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border);cursor:pointer">
+        <div class="acc-row-icon" style="background:var(--blue-l)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="1.7" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
+        </div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:14px;font-weight:500;color:var(--t1)" id="txt-language">Language</div>
+          <div style="font-size:11px;color:var(--t3);margin-top:2px" id="currentLangLabel">English</div>
+        </div>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--t3)" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+      </div>
+      <!-- Refresh events row -->
+      <div class="acc-row acc-row-tap" onclick="handleRefreshEvents()" style="padding:14px 16px;display:flex;align-items:center;gap:12px;cursor:pointer">
+        <div class="acc-row-icon" style="background:var(--card2)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--t2)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+        </div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:14px;font-weight:500;color:var(--t1)" id="txt-refreshEvents">Refresh Events</div>
+          <div style="font-size:11px;color:var(--t3);margin-top:2px"><span id="lastRefreshLabel"></span></div>
+        </div>
       </div>
     </div>
 
-    <!-- Settings -->
-    <div style="background:var(--card);border:1.5px solid var(--border);border-radius:20px;overflow:hidden;margin-bottom:12px">
-      <div onclick="go('s-country-select')" style="padding:16px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border);cursor:pointer">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--t2)" stroke-width="1.7" stroke-linecap="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-        <span style="font-size:14px;color:var(--t1);flex:1" id="txt-changeCountry">Change Country</span>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--t3)" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+    <!-- SECTION: ACCOUNT INFO -->
+    <div class="acc-section-hdr" id="txt-accountHeader">ACCOUNT</div>
+    <div style="background:var(--card);border:1.5px solid var(--border);border-radius:20px;overflow:hidden;margin-bottom:20px">
+      <div style="padding:14px 16px;border-bottom:1px solid var(--border)">
+        <div style="font-size:11px;color:var(--t3);margin-bottom:3px" id="txt-emailLbl">Email</div>
+        <div id="profileEmail" style="font-size:14px;color:var(--t1);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">—</div>
       </div>
-      <div onclick="go('s-lang-select')" style="padding:16px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border);cursor:pointer">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--t2)" stroke-width="1.7" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><line x1="2" y1="12" x2="22" y2="12"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/></svg>
-        <span style="font-size:14px;color:var(--t1);flex:1" id="txt-language">Language</span>
-        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--t3)" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
-      </div>
-      <div onclick="handleRefreshEvents()" style="padding:16px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border);cursor:pointer">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--t2)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
-        <span style="font-size:14px;color:var(--t1);flex:1" id="txt-refreshEvents">Refresh Events</span>
-        <span id="lastRefreshLabel" style="font-size:11px;color:var(--t3)"></span>
-      </div>
-      <div onclick="go('s-splash')" style="padding:16px;display:flex;align-items:center;gap:12px;cursor:pointer">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="1.7" stroke-linecap="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-        <span style="font-size:14px;color:var(--red);flex:1" id="txt-signOut">Sign Out</span>
+      <div style="padding:14px 16px">
+        <div style="font-size:11px;color:var(--t3);margin-bottom:3px" id="txt-phoneLbl">Phone</div>
+        <div id="profilePhone" style="font-size:14px;color:var(--t1)">—</div>
       </div>
     </div>
-    <div style="text-align:center;font-size:12px;color:var(--t3);margin-top:8px">Marketing Planner v1.0 · Free</div>
+
+    <!-- SECTION: MORE -->
+    <div class="acc-section-hdr" id="txt-moreHeader">MORE</div>
+    <div style="background:var(--card);border:1.5px solid var(--border);border-radius:20px;overflow:hidden;margin-bottom:20px">
+      <div class="acc-row acc-row-tap" onclick="go('s-feedback')" style="padding:14px 16px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border);cursor:pointer">
+        <div class="acc-row-icon" style="background:var(--card2)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--t2)" stroke-width="1.7" stroke-linecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+        </div>
+        <span style="font-size:14px;color:var(--t1);flex:1" id="txt-feedbackRow">Feedback & Suggestions</span>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--t3)" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+      </div>
+      <div class="acc-row acc-row-tap" onclick="confirmSignOut()" style="padding:14px 16px;display:flex;align-items:center;gap:12px;cursor:pointer">
+        <div class="acc-row-icon" style="background:rgba(192,57,43,.1)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="1.7" stroke-linecap="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+        </div>
+        <span style="font-size:14px;color:var(--red);flex:1;font-weight:500" id="txt-signOut">Sign Out</span>
+      </div>
+    </div>
+    <div style="text-align:center;font-size:11px;color:var(--t3);margin-top:8px">Marketing Planner v1.0</div>
+  </div>
+</div>
+
+<!-- ══ FEEDBACK SCREEN (moved out of Account) ══ -->
+<div class="screen" id="s-feedback">
+  <div style="padding:14px 24px;display:flex;align-items:center;gap:12px;flex-shrink:0">
+    <div class="bk" onclick="go('s-profile')"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></div>
+    <div style="font-family:'DM Serif Display',serif;font-size:20px;color:var(--t1)" id="txt-feedbackTitle">Feedback & Suggestions</div>
+  </div>
+  <div style="padding:0 24px;padding-bottom:24px;overflow-y:auto;flex:1">
+    <div style="font-size:13px;color:var(--t2);margin-bottom:20px;line-height:1.5" id="txt-feedbackDesc">Help us improve. Share your thoughts, report issues, or suggest features.</div>
+    <div style="margin-bottom:18px">
+      <div class="lbl" style="margin-bottom:8px" id="txt-feedbackTypeLbl">Type</div>
+      <div style="display:flex;gap:8px">
+        <div onclick="setFeedbackType(this,'suggestion')" class="fb-type" style="flex:1;padding:12px 8px;border-radius:14px;border:1.5px solid var(--green);background:var(--green-l);text-align:center;font-size:13px;font-weight:600;color:var(--green);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12.74V17a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-2.26A7 7 0 0 0 12 2z"/></svg>
+          <span id="txt-typeSuggestion">Idea</span>
+        </div>
+        <div onclick="setFeedbackType(this,'bug')" class="fb-type" style="flex:1;padding:12px 8px;border-radius:14px;border:1.5px solid var(--border);background:transparent;text-align:center;font-size:13px;font-weight:500;color:var(--t2);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+          <span id="txt-typeBug">Issue</span>
+        </div>
+        <div onclick="setFeedbackType(this,'other')" class="fb-type" style="flex:1;padding:12px 8px;border-radius:14px;border:1.5px solid var(--border);background:transparent;text-align:center;font-size:13px;font-weight:500;color:var(--t2);cursor:pointer;display:flex;flex-direction:column;align-items:center;gap:6px">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+          <span id="txt-typeOther">Other</span>
+        </div>
+      </div>
+    </div>
+    <div style="margin-bottom:16px">
+      <div class="lbl" style="margin-bottom:8px" id="txt-feedbackMsgLbl">Message</div>
+      <textarea id="feedbackText" class="inp" style="height:140px;resize:none" placeholder="Write your feedback here..."></textarea>
+    </div>
+    <button onclick="submitFeedback()" class="btn" id="txt-sendFeedback">Send Feedback</button>
   </div>
 </div>
 
@@ -1262,7 +1317,7 @@ var STRINGS = {
     // Home
     hello: 'Hello,',
     yourTimeline: 'Your Timeline',
-    allEvents: 'All Events',
+    allEvents: 'Up Next',
     addCustom: '+ Add Custom',
     comingUp: 'Coming Up',
     viewAll: 'View all',
@@ -1388,6 +1443,28 @@ var STRINGS = {
     minAgo: 'min ago',
     hrAgo: 'h ago',
     dayAgo: 'd ago',
+    // Account section headers
+    prefsHeader: 'PREFERENCES',
+    accountHeader: 'ACCOUNT',
+    moreHeader: 'MORE',
+    feedbackRow: 'Feedback & Suggestions',
+    feedbackDesc: 'Help us improve. Share your thoughts, report issues, or suggest features.',
+    feedbackTypeLbl: 'Type',
+    feedbackMsgLbl: 'Message',
+    typeSuggestion: 'Idea',
+    typeBug: 'Issue',
+    typeOther: 'Other',
+    emailLbl: 'Email',
+    phoneLbl: 'Phone',
+    // Confirm modal
+    areYouSure: 'Are you sure?',
+    confirm: 'Confirm',
+    cancel: 'Cancel',
+    delete: 'Delete',
+    signOutTitle: 'Sign out?',
+    signOutMsg: 'Your synced data will stay safe and reload when you sign back in.',
+    deleteEventTitle: 'Delete this event?',
+    deleteEventMsg: 'This will also remove any reminders and notes attached to it.',
     monthsShort: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
   },
   ar: {
@@ -1412,7 +1489,7 @@ var STRINGS = {
     createBtn: 'إنشاء الحساب', signInBtn: 'دخول',
     hello: 'مرحباً،',
     yourTimeline: 'خططك التسويقية',
-    allEvents: 'كل الأحداث',
+    allEvents: 'القادم',
     addCustom: '+ إضافة حدث',
     comingUp: 'الأحداث القريبة',
     viewAll: 'عرض الكل',
@@ -1527,6 +1604,28 @@ var STRINGS = {
     minAgo: 'د مضت',
     hrAgo: 'س مضت',
     dayAgo: 'يوم',
+    // Account section headers
+    prefsHeader: 'التفضيلات',
+    accountHeader: 'الحساب',
+    moreHeader: 'المزيد',
+    feedbackRow: 'الملاحظات والاقتراحات',
+    feedbackDesc: 'ساعدنا نتطور. شارك أفكارك، بلّغ عن مشكلة، أو اقترح ميزة جديدة.',
+    feedbackTypeLbl: 'النوع',
+    feedbackMsgLbl: 'الرسالة',
+    typeSuggestion: 'اقتراح',
+    typeBug: 'مشكلة',
+    typeOther: 'أخرى',
+    emailLbl: 'البريد الإلكتروني',
+    phoneLbl: 'رقم الجوال',
+    // Confirm modal
+    areYouSure: 'هل أنت متأكد؟',
+    confirm: 'تأكيد',
+    cancel: 'إلغاء',
+    delete: 'حذف',
+    signOutTitle: 'تسجيل الخروج؟',
+    signOutMsg: 'بياناتك المتزامنة محفوظة وراح ترجع لما تسجل دخول مرة ثانية.',
+    deleteEventTitle: 'حذف هذا الحدث؟',
+    deleteEventMsg: 'هذا سيحذف أيضاً جميع التذكيرات والملاحظات المرتبطة به.',
     monthsShort: ['ينا','فبر','مار','أبر','ماي','يون','يول','أغس','سبت','أكت','نوف','ديس'],
   }
 };
@@ -1572,6 +1671,19 @@ function applyAllTranslations() {
     'txt-freePlan': 'freePlan',
     'txt-changeCountry': 'changeCountry',
     'txt-refreshEvents': 'refreshEvents',
+    'txt-prefsHeader': 'prefsHeader',
+    'txt-accountHeader': 'accountHeader',
+    'txt-moreHeader': 'moreHeader',
+    'txt-feedbackRow': 'feedbackRow',
+    'txt-feedbackTitle': 'feedbackRow',
+    'txt-feedbackDesc': 'feedbackDesc',
+    'txt-feedbackTypeLbl': 'feedbackTypeLbl',
+    'txt-feedbackMsgLbl': 'feedbackMsgLbl',
+    'txt-typeSuggestion': 'typeSuggestion',
+    'txt-typeBug': 'typeBug',
+    'txt-typeOther': 'typeOther',
+    'txt-emailLbl': 'emailLbl',
+    'txt-phoneLbl': 'phoneLbl',
     'txt-language': 'language',
     'txt-signOut': 'signOut',
     'txt-newNote': 'newNote',
@@ -2282,7 +2394,12 @@ function renderReminders() {
   var reminders = eventReminders[key] || [];
   
   if (!reminders.length) {
-    c.innerHTML = '<div style="text-align:center;padding:20px 0;color:var(--t3);font-size:13px">' + t('noRemindersHint') + '</div>';
+    c.innerHTML = '<div style="background:var(--card2);border:2px dashed var(--border);border-radius:18px;padding:32px 20px;text-align:center">'
+      + '<div style="width:48px;height:48px;border-radius:14px;background:var(--green-l);display:flex;align-items:center;justify-content:center;margin:0 auto 12px">'
+      + '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>'
+      + '</div>'
+      + '<div style="font-size:14px;font-weight:500;color:var(--t2);line-height:1.5">' + (t('noRemindersHint') || 'No reminders yet') + '</div>'
+      + '</div>';
     return;
   }
   
@@ -2500,7 +2617,15 @@ function go(id) {
   var el = document.getElementById(id);
   if (el) { el.classList.add('active'); el.scrollTop = 0; }
   if (id === 's-calendar') renderCalendar();
-  if (id === 's-profile') { try { refreshNotifToggle(); updateLastRefreshLabel(); } catch(e) {} }
+  if (id === 's-profile') {
+    try {
+      refreshNotifToggle();
+      updateLastRefreshLabel();
+      var l = LANGS.find(function(x){ return x.code === lang; });
+      var lbl = document.getElementById('currentLangLabel');
+      if (lbl && l) lbl.textContent = l.native;
+    } catch(e) {}
+  }
   if (id === 's-notif') { try { renderNotifList(); } catch(e) {} }
 }
 
@@ -2508,6 +2633,39 @@ function navTo(i) {
   document.querySelectorAll('.ni').forEach(function(n) { n.classList.remove('active'); });
   document.getElementById('nav' + i).classList.add('active');
   go(['s-home','s-calendar','s-profile'][i]);
+}
+
+// ── GENERIC CONFIRM MODAL ──
+var _confirmAction = null;
+function showConfirm(opts) {
+  // opts: { title, message, confirmText, cancelText, danger, onConfirm }
+  document.getElementById('confirmModalTitle').textContent = opts.title || (t('areYouSure') || 'Are you sure?');
+  document.getElementById('confirmModalMsg').textContent = opts.message || '';
+  var okBtn = document.getElementById('confirmModalOk');
+  okBtn.textContent = opts.confirmText || (t('confirm') || 'Confirm');
+  okBtn.style.background = opts.danger === false ? 'var(--green)' : 'var(--red)';
+  document.getElementById('confirmModalCancel').textContent = opts.cancelText || (t('cancel') || 'Cancel');
+  _confirmAction = opts.onConfirm || null;
+  var modal = document.getElementById('confirmModal');
+  modal.style.display = 'flex';
+}
+function closeConfirmModal() {
+  document.getElementById('confirmModal').style.display = 'none';
+  _confirmAction = null;
+}
+function runConfirmAction() {
+  var fn = _confirmAction;
+  closeConfirmModal();
+  if (typeof fn === 'function') try { fn(); } catch(e) { console.log(e); }
+}
+
+function confirmSignOut() {
+  showConfirm({
+    title: t('signOutTitle') || 'Sign out?',
+    message: t('signOutMsg') || 'Your synced data will stay safe and reload when you sign back in.',
+    confirmText: t('signOut') || 'Sign Out',
+    onConfirm: function() { signOut(); }
+  });
 }
 
 function quickLogin() {
@@ -2557,6 +2715,9 @@ function selectLang(code) {
   document.documentElement.lang = code;
   applyAllTranslations();
   renderLangList();
+  // Update language label in Account screen
+  var langLbl = document.getElementById('currentLangLabel');
+  if (langLbl && l) langLbl.textContent = l.native;
   var manualLangs = ['en','ar','fr','es','de','zh','ja','tr'];
   if (manualLangs.indexOf(code) === -1) translateUI(code);
   // Persist to user profile when signed in
@@ -2749,6 +2910,9 @@ function updateNotifToggleUI(on) {
   if (tg) { if (on) tg.classList.add('on'); else tg.classList.remove('on'); }
   var status = document.getElementById('notifStatusLabel');
   if (status) status.textContent = on ? t('notifOn') : t('notifOff');
+  // Only show the "Send test notification" row when notifications are enabled
+  var testRow = document.getElementById('notifTestRow');
+  if (testRow) testRow.style.display = on ? 'flex' : 'none';
 }
 
 // Keep the toggle in sync when the user opens Account.
@@ -2900,7 +3064,27 @@ function updateHero() {
   var dateEl = document.getElementById('heroDate');
   if (dateEl) dateEl.textContent = ev.label || ev.dateLabel || '';
   var daysEl = document.getElementById('heroDays');
-  if (daysEl) daysEl.textContent = ev.days > 0 ? ev.days : t('today');
+  var labelEl = document.getElementById('txt-heroDaysLeft');
+  var badgeEl = document.getElementById('txt-nextEvent');
+  if (ev.days === 0) {
+    // Today — change badge to "TODAY", show just the word "Today" prominently, no number
+    if (badgeEl) badgeEl.textContent = (t('today') || 'TODAY').toUpperCase();
+    if (daysEl) {
+      daysEl.textContent = t('today');
+      daysEl.style.fontSize = '16px';
+    }
+    if (labelEl) labelEl.style.display = 'none';
+  } else {
+    if (badgeEl) badgeEl.textContent = t('nextEvent') || 'NEXT EVENT';
+    if (daysEl) {
+      daysEl.textContent = ev.days;
+      daysEl.style.fontSize = '';
+    }
+    if (labelEl) {
+      labelEl.style.display = '';
+      labelEl.textContent = t('daysLeft');
+    }
+  }
 }
 
 // ── EVENT DETAIL ──
@@ -2915,17 +3099,32 @@ function openEventDetail(ev) {
   var dateEl = document.getElementById('detailDate');
   if (dateEl) dateEl.textContent = ev.label || ev.dateLabel || '';
   var daysEl = document.getElementById('detailDays');
-  if (daysEl) {
-    if (past) {
-      daysEl.textContent = Math.abs(ev.days);
-    } else {
-      daysEl.textContent = ev.days > 0 ? ev.days : t('today');
-    }
-  }
-  // Swap the "days left" label for "days ago" on past events
   var daysLeftLabel = document.getElementById('txt-detailDaysLeft');
-  if (daysLeftLabel) {
-    daysLeftLabel.textContent = past ? t('daysAgo') : t('daysLeft');
+  if (past) {
+    if (daysEl) {
+      daysEl.textContent = Math.abs(ev.days);
+      daysEl.style.fontSize = '';
+    }
+    if (daysLeftLabel) {
+      daysLeftLabel.style.display = '';
+      daysLeftLabel.textContent = t('daysAgo');
+    }
+  } else if (ev.days === 0) {
+    // Today — emphasize the word "Today"
+    if (daysEl) {
+      daysEl.textContent = t('today');
+      daysEl.style.fontSize = '20px';
+    }
+    if (daysLeftLabel) daysLeftLabel.style.display = 'none';
+  } else {
+    if (daysEl) {
+      daysEl.textContent = ev.days;
+      daysEl.style.fontSize = '';
+    }
+    if (daysLeftLabel) {
+      daysLeftLabel.style.display = '';
+      daysLeftLabel.textContent = t('daysLeft');
+    }
   }
   var card = document.getElementById('detailHeroCard');
   if (card) card.style.background = color;
@@ -2958,7 +3157,9 @@ function renderTimeline() {
   var row = document.getElementById('timelineRow');
   if (!row) return;
   row.innerHTML = '';
-  var evs = allEvs().filter(function(e) { return !isEventPast(e); });
+  // Show only the next 3 events in this horizontal strip — Coming Up below has the full list.
+  // Three is enough to scan at a glance without overlap with the list.
+  var evs = allEvs().filter(function(e) { return !isEventPast(e); }).slice(0, 3);
   evs.forEach(function(ev, i) {
     if (i > 0) {
       var conn = document.createElement('div');
@@ -2982,11 +3183,20 @@ function renderTimeline() {
 
     if (isFirst) {
       var tag = document.createElement('div');
-      tag.style.cssText = 'font-size:9px;font-weight:600;color:' + ev.color + ';letter-spacing:.8px;text-transform:uppercase;margin-bottom:5px;display:flex;align-items:center;gap:4px';
-      var dot2 = document.createElement('div');
-      dot2.style.cssText = 'width:5px;height:5px;border-radius:50%;background:' + ev.color;
-      tag.appendChild(dot2);
-      tag.appendChild(document.createTextNode(t('nextEvent')));
+      // Special "TODAY" treatment — louder, animated dot
+      if (ev.days === 0) {
+        tag.style.cssText = 'font-size:9px;font-weight:700;color:#fff;background:var(--red);letter-spacing:1px;text-transform:uppercase;padding:3px 8px;border-radius:50px;margin-bottom:6px;display:inline-flex;align-items:center;gap:5px;align-self:flex-start';
+        var dotToday = document.createElement('div');
+        dotToday.style.cssText = 'width:5px;height:5px;border-radius:50%;background:#fff;animation:pulse-dot 1.5s ease infinite';
+        tag.appendChild(dotToday);
+        tag.appendChild(document.createTextNode(t('today').toUpperCase()));
+      } else {
+        tag.style.cssText = 'font-size:9px;font-weight:600;color:' + ev.color + ';letter-spacing:.8px;text-transform:uppercase;margin-bottom:5px;display:flex;align-items:center;gap:4px';
+        var dot2 = document.createElement('div');
+        dot2.style.cssText = 'width:5px;height:5px;border-radius:50%;background:' + ev.color;
+        tag.appendChild(dot2);
+        tag.appendChild(document.createTextNode(t('nextEvent')));
+      }
       card.appendChild(tag);
     } else if (ev.isCustom) {
       var ctag = document.createElement('div');
@@ -3008,8 +3218,8 @@ function renderTimeline() {
     var pill = document.createElement('div');
     pill.style.cssText = 'background:' + ev.bg + ';border-radius:50px;padding:4px 10px;display:inline-flex;align-items:center;gap:4px';
     var dnum = document.createElement('span');
-    dnum.style.cssText = 'font-size:13px;font-weight:700;color:' + ev.color;
-    dnum.textContent = ev.days > 0 ? ev.days : '!';
+    dnum.style.cssText = 'font-size:' + (ev.days === 0 ? '11' : '13') + 'px;font-weight:700;color:' + ev.color;
+    dnum.textContent = ev.days > 0 ? ev.days : t('today');
     pill.appendChild(dnum);
     if (ev.days > 0) {
       var dunit = document.createElement('span');
@@ -3037,11 +3247,50 @@ function renderTimeline() {
 }
 
 // ── UPCOMING ──
+// Returns an SVG icon string based on event type
+function getEventIcon(ev) {
+  var stroke = ev.color || 'var(--green)';
+  if (ev.isCustom) {
+    // Star for custom events — distinctive
+    return '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="' + stroke + '" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>';
+  }
+  if (ev.type === 'religious') {
+    // Crescent moon for religious
+    return '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="' + stroke + '" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
+  }
+  if (ev.type === 'national') {
+    // Flag for national
+    return '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="' + stroke + '" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>';
+  }
+  if (ev.type === 'seasonal') {
+    // Sparkles for seasonal/marketing
+    return '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="' + stroke + '" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v3M12 18v3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M3 12h3M18 12h3M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1"/></svg>';
+  }
+  // Default calendar
+  return '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="' + stroke + '" stroke-width="1.6" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/></svg>';
+}
+
 function renderUpcoming() {
   var c = document.getElementById('upcomingList');
   if (!c) return;
   c.innerHTML = '';
   var evs = allEvs().filter(function(e) { return !isEventPast(e); }).slice(0, 5);
+  // Loading state — show skeleton placeholders if we have no events for this country yet
+  if (!evs.length) {
+    var loadingHtml = '';
+    for (var i = 0; i < 3; i++) {
+      loadingHtml += '<div style="background:var(--card);border:1.5px solid var(--border);border-radius:18px;padding:16px;display:flex;align-items:center;gap:14px;margin-bottom:10px;animation:pulse 1.4s ease infinite">'
+        + '<div style="width:48px;height:48px;border-radius:16px;background:var(--card2)"></div>'
+        + '<div style="flex:1">'
+        + '<div style="width:60%;height:14px;background:var(--card2);border-radius:7px;margin-bottom:6px"></div>'
+        + '<div style="width:40%;height:11px;background:var(--card2);border-radius:6px"></div>'
+        + '</div>'
+        + '<div style="width:32px;height:32px;background:var(--card2);border-radius:8px"></div>'
+        + '</div>';
+    }
+    c.innerHTML = loadingHtml;
+    return;
+  }
   evs.forEach(function(ev, i) {
     var div = document.createElement('div');
     div.style.cssText = 'background:var(--card);border:1.5px solid var(--border);border-radius:18px;padding:16px;cursor:pointer;display:flex;align-items:center;gap:14px;box-shadow:var(--shadow);margin-bottom:10px';
@@ -3049,7 +3298,7 @@ function renderUpcoming() {
 
     var icon = document.createElement('div');
     icon.style.cssText = 'width:48px;height:48px;border-radius:16px;background:' + ev.bg + ';display:flex;align-items:center;justify-content:center;flex-shrink:0';
-    icon.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="' + ev.color + '" stroke-width="1.6" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/></svg>';
+    icon.innerHTML = getEventIcon(ev);
 
     var info = document.createElement('div');
     info.style.cssText = 'flex:1';
@@ -3064,14 +3313,22 @@ function renderUpcoming() {
 
     var daysDiv = document.createElement('div');
     daysDiv.style.cssText = 'text-align:center;flex-shrink:0';
-    var dNum = document.createElement('div');
-    dNum.style.cssText = 'font-size:24px;font-weight:700;color:' + ev.color + ';line-height:1;letter-spacing:-1px';
-    dNum.textContent = ev.days > 0 ? ev.days : '!';
-    var dLbl = document.createElement('div');
-    dLbl.style.cssText = 'font-size:10px;color:var(--t2);margin-top:2px;font-weight:500';
-    dLbl.textContent = t('days');
-    daysDiv.appendChild(dNum);
-    daysDiv.appendChild(dLbl);
+    var isToday = ev.days === 0;
+    if (isToday) {
+      var badge = document.createElement('div');
+      badge.className = 'today-badge';
+      badge.textContent = t('today');
+      daysDiv.appendChild(badge);
+    } else {
+      var dNum = document.createElement('div');
+      dNum.style.cssText = 'font-size:24px;font-weight:700;color:' + ev.color + ';line-height:1;letter-spacing:-1px';
+      dNum.textContent = ev.days;
+      var dLbl = document.createElement('div');
+      dLbl.style.cssText = 'font-size:10px;color:var(--t2);margin-top:2px;font-weight:500';
+      dLbl.textContent = t('days');
+      daysDiv.appendChild(dNum);
+      daysDiv.appendChild(dLbl);
+    }
 
     div.appendChild(icon);
     div.appendChild(info);
@@ -3109,7 +3366,11 @@ function renderCalendar() {
 
     var icon = document.createElement('div');
     icon.style.cssText = 'width:52px;height:52px;border-radius:16px;background:' + (past ? 'var(--card2)' : ev.bg) + ';display:flex;align-items:center;justify-content:center;flex-shrink:0';
-    icon.innerHTML = '<svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="' + (past ? 'var(--t3)' : ev.color) + '" stroke-width="1.6" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/></svg>';
+    if (past) {
+      icon.innerHTML = '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--t3)" stroke-width="1.6" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/></svg>';
+    } else {
+      icon.innerHTML = getEventIcon(ev);
+    }
 
     var info = document.createElement('div');
     info.style.cssText = 'flex:1;min-width:0';
@@ -3247,7 +3508,15 @@ async function addCustomEvent() {
 }
 
 async function removeCustomEvent(idx) {
-  if (!confirm(t('confirmDelete') || 'Delete this event?')) return;
+  showConfirm({
+    title: t('deleteEventTitle') || 'Delete this event?',
+    message: t('deleteEventMsg') || 'This will also remove any reminders and notes attached to it.',
+    confirmText: t('delete') || 'Delete',
+    onConfirm: function() { _doRemoveCustomEvent(idx); }
+  });
+}
+
+async function _doRemoveCustomEvent(idx) {
   var removed = customEvs[idx];
   customEvs.splice(idx, 1);
   // Best-effort: delete from Supabase if present
@@ -3704,6 +3973,21 @@ document.addEventListener('visibilitychange', function() {
     <div style="display:flex;gap:10px">
       <button onclick="var c=document.getElementById('countryConfirmOverlay').getAttribute('data-code');confirmCountry(c)" style="flex:1;padding:13px;background:var(--green);color:#fff;border:none;border-radius:14px;font-family:DM Sans,sans-serif;font-size:14px;font-weight:600;cursor:pointer">Yes, that's right</button>
       <button onclick="changeCountryFromConfirm()" style="flex:1;padding:13px;background:var(--card2);color:var(--t1);border:1.5px solid var(--border);border-radius:14px;font-family:DM Sans,sans-serif;font-size:14px;font-weight:500;cursor:pointer">Change</button>
+    </div>
+  </div>
+</div>
+
+<!-- GENERIC CONFIRM MODAL — for sign out, delete, etc. -->
+<div id="confirmModal" style="display:none;position:fixed;inset:0;z-index:300;background:rgba(0,0,0,.5);align-items:flex-end;justify-content:center;padding:0 16px 40px">
+  <div style="background:var(--card);border-radius:24px;padding:24px;width:100%;max-width:420px;border:1.5px solid var(--border);box-shadow:var(--shadow-lg)">
+    <div id="confirmModalIcon" style="width:56px;height:56px;border-radius:18px;background:var(--card2);display:flex;align-items:center;justify-content:center;margin:0 auto 14px">
+      <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+    </div>
+    <div id="confirmModalTitle" style="font-family:'DM Serif Display',serif;font-size:20px;color:var(--t1);text-align:center;margin-bottom:8px">Are you sure?</div>
+    <div id="confirmModalMsg" style="font-size:13px;color:var(--t2);text-align:center;margin-bottom:20px;line-height:1.5">This action cannot be undone.</div>
+    <div style="display:flex;gap:10px">
+      <button onclick="closeConfirmModal()" id="confirmModalCancel" style="flex:1;padding:13px;background:var(--card2);color:var(--t1);border:1.5px solid var(--border);border-radius:14px;font-family:DM Sans,sans-serif;font-size:14px;font-weight:500;cursor:pointer">Cancel</button>
+      <button onclick="runConfirmAction()" id="confirmModalOk" style="flex:1;padding:13px;background:var(--red);color:#fff;border:none;border-radius:14px;font-family:DM Sans,sans-serif;font-size:14px;font-weight:600;cursor:pointer">Confirm</button>
     </div>
   </div>
 </div>
