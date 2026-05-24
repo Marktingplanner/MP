@@ -37,6 +37,16 @@ html,body{width:100%;height:100%;overflow:hidden;background:#E8E5DF;font-family:
 
 /* LAYOUT */
 .statusbar{display:flex;justify-content:space-between;align-items:center;padding:14px 24px 8px;flex-shrink:0}
+/* Hide the in-app fake status bar when installed as a PWA — iOS shows its real one */
+@media all and (display-mode: standalone){.statusbar{display:none}}
+@supports (-webkit-touch-callout: none){
+  /* extra safety for iOS Safari standalone */
+  body:has(.phone) .statusbar{}
+}
+/* Hide OneSignal's floating bell — we have our own toggle in Account */
+#onesignal-bell-container,
+.onesignal-bell-launcher,
+.onesignal-slidedown-container { display: none !important; }
 .screens{flex:1;position:relative;overflow:hidden}
 .screen{position:absolute;inset:0;overflow-y:auto;overflow-x:hidden;opacity:0;pointer-events:none;display:flex;flex-direction:column;transition:opacity .2s;background:var(--bg)}
 .screen::-webkit-scrollbar{display:none}
@@ -102,7 +112,7 @@ const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 // ── AUTH FUNCTIONS ──
 async function signUp(email, password, userData) {
   const { data, error } = await sb.auth.signUp({ email, password });
-  if (error) { toast('Error: ' + error.message); return null; }
+  if (error) { toast(t('errorPrefix') + error.message); return null; }
   // Save profile
   if (data.user) {
     await sb.from('profiles').upsert({
@@ -121,7 +131,7 @@ async function signUp(email, password, userData) {
 
 async function signIn(email, password) {
   const { data, error } = await sb.auth.signInWithPassword({ email, password });
-  if (error) { toast('Error: ' + error.message); return null; }
+  if (error) { toast(t('errorPrefix') + error.message); return null; }
   return data;
 }
 
@@ -195,18 +205,10 @@ sb.auth.onAuthStateChange(function(event, session) {
 <script>
   window.OneSignalDeferred = window.OneSignalDeferred || [];
   OneSignalDeferred.push(async function(OneSignal) {
-    // Detect iOS standalone (PWA installed to home screen)
-    var isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
-    var isStandalone = window.matchMedia('(display-mode: standalone)').matches || window.navigator.standalone === true;
-    // Hide OneSignal's floating bell on iOS PWA — it doesn't reliably work there.
-    // We'll handle permission with our own button using the native Notification API.
-    var showNotifyButton = !(isIOS && isStandalone);
     await OneSignal.init({
       appId: "72bdd994-e083-4987-806c-280dfd31ceb0",
       safari_web_id: "web.onesignal.auto.10d6980b-bbad-483e-b993-08fa2a289dd8",
-      notifyButton: {
-        enable: showNotifyButton,
-      },
+      notifyButton: { enable: false },
       allowLocalhostAsSecureOrigin: true,
     });
     window.__oneSignalReady = true;
@@ -512,7 +514,7 @@ sb.auth.onAuthStateChange(function(event, session) {
       <div style="position:absolute;bottom:-20px;right:-20px;width:100px;height:100px;border-radius:50%;background:rgba(255,255,255,.04)"></div>
       <div style="font-size:11px;font-weight:600;color:rgba(255,255,255,.7);letter-spacing:1px;text-transform:uppercase;margin-bottom:12px;display:flex;align-items:center;gap:6px">
         <div style="width:6px;height:6px;border-radius:50%;background:#fff;animation:pulse 1.5s infinite"></div>
-        NEXT EVENT
+        <span id="txt-nextEvent">NEXT EVENT</span>
       </div>
       <div style="display:flex;align-items:flex-start;justify-content:space-between;gap:12px">
         <div style="flex:1">
@@ -520,7 +522,7 @@ sb.auth.onAuthStateChange(function(event, session) {
           <div id="heroDate" style="font-size:13px;color:rgba(255,255,255,.75);margin-bottom:18px">—</div>
           <div style="display:inline-flex;align-items:baseline;gap:5px;background:rgba(255,255,255,.15);border-radius:50px;padding:6px 14px">
             <span id="heroDays" style="font-size:20px;font-weight:700;color:#fff;letter-spacing:-1px">—</span>
-            <span style="font-size:12px;color:rgba(255,255,255,.8);font-weight:500">days left</span>
+            <span id="txt-heroDaysLeft" style="font-size:12px;color:rgba(255,255,255,.8);font-weight:500">days left</span>
           </div>
         </div>
         <div style="width:60px;height:60px;border-radius:18px;background:rgba(255,255,255,.15);display:flex;align-items:center;justify-content:center">
@@ -559,16 +561,16 @@ sb.auth.onAuthStateChange(function(event, session) {
     <div id="txt-calendar" style="font-family:'DM Serif Display',serif;font-size:24px;color:var(--t1)">Calendar</div>
     <div onclick="showAddSheet()" style="display:flex;align-items:center;gap:5px;background:var(--gold-l);border:1.5px solid rgba(184,134,11,.2);border-radius:50px;padding:7px 16px;cursor:pointer">
       <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-      <span style="font-size:12px;font-weight:600;color:var(--gold)">Custom Event</span>
+      <span id="txt-customEvent" style="font-size:12px;font-weight:600;color:var(--gold)">Custom Event</span>
     </div>
   </div>
   <!-- Filters -->
   <div style="display:flex;gap:8px;padding:0 24px;margin-bottom:16px;overflow-x:auto;scrollbar-width:none;flex-shrink:0">
-    <button onclick="setCalFilter('all',this)" class="cal-f" style="padding:8px 18px;border-radius:50px;border:1.5px solid var(--green);background:var(--green);color:#fff;font-family:DM Sans,sans-serif;font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap">All</button>
-    <button onclick="setCalFilter('national',this)" class="cal-f" style="padding:8px 18px;border-radius:50px;border:1.5px solid var(--border);background:transparent;color:var(--t2);font-family:DM Sans,sans-serif;font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap">National</button>
-    <button onclick="setCalFilter('religious',this)" class="cal-f" style="padding:8px 18px;border-radius:50px;border:1.5px solid var(--border);background:transparent;color:var(--t2);font-family:DM Sans,sans-serif;font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap">Religious</button>
-    <button onclick="setCalFilter('seasonal',this)" class="cal-f" style="padding:8px 18px;border-radius:50px;border:1.5px solid var(--border);background:transparent;color:var(--t2);font-family:DM Sans,sans-serif;font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap">Seasonal</button>
-    <button onclick="setCalFilter('custom',this)" class="cal-f" style="padding:8px 18px;border-radius:50px;border:1.5px solid rgba(184,134,11,.3);background:transparent;color:var(--gold);font-family:DM Sans,sans-serif;font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap">Custom</button>
+    <button onclick="setCalFilter('all',this)" class="cal-f" id="txt-filterAll" style="padding:8px 18px;border-radius:50px;border:1.5px solid var(--green);background:var(--green);color:#fff;font-family:DM Sans,sans-serif;font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap">All</button>
+    <button onclick="setCalFilter('national',this)" class="cal-f" id="txt-filterNational" style="padding:8px 18px;border-radius:50px;border:1.5px solid var(--border);background:transparent;color:var(--t2);font-family:DM Sans,sans-serif;font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap">National</button>
+    <button onclick="setCalFilter('religious',this)" class="cal-f" id="txt-filterReligious" style="padding:8px 18px;border-radius:50px;border:1.5px solid var(--border);background:transparent;color:var(--t2);font-family:DM Sans,sans-serif;font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap">Religious</button>
+    <button onclick="setCalFilter('seasonal',this)" class="cal-f" id="txt-filterSeasonal" style="padding:8px 18px;border-radius:50px;border:1.5px solid var(--border);background:transparent;color:var(--t2);font-family:DM Sans,sans-serif;font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap">Seasonal</button>
+    <button onclick="setCalFilter('custom',this)" class="cal-f" id="txt-filterCustom" style="padding:8px 18px;border-radius:50px;border:1.5px solid rgba(184,134,11,.3);background:transparent;color:var(--gold);font-family:DM Sans,sans-serif;font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap">Custom</button>
   </div>
   <div style="padding:0 24px;padding-bottom:110px;flex:1;overflow-y:auto" id="calList"></div>
 </div>
@@ -590,14 +592,14 @@ sb.auth.onAuthStateChange(function(event, session) {
       <div id="detailDate" style="font-size:13px;color:rgba(255,255,255,.75);margin-bottom:18px">—</div>
       <div style="display:inline-flex;align-items:baseline;gap:5px;background:rgba(255,255,255,.15);border-radius:50px;padding:8px 20px">
         <span id="detailDays" style="font-size:28px;font-weight:700;color:#fff;letter-spacing:-1px">—</span>
-        <span style="font-size:13px;color:rgba(255,255,255,.8)">days left</span>
+        <span id="txt-detailDaysLeft" style="font-size:13px;color:rgba(255,255,255,.8)">days left</span>
       </div>
     </div>
     <!-- Smart Reminders -->
     <div style="background:var(--card);border:1.5px solid var(--border);border-radius:20px;padding:20px;margin-bottom:14px">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
-        <div style="font-size:15px;font-weight:600;color:var(--t1)">Smart Reminders</div>
-        <button onclick="showAddReminderSheet()" style="background:var(--green);color:#fff;border:none;border-radius:50px;padding:6px 14px;font-family:DM Sans,sans-serif;font-size:12px;font-weight:600;cursor:pointer">+ Add</button>
+        <div style="font-size:15px;font-weight:600;color:var(--t1)" id="txt-smartReminders">Smart Reminders</div>
+        <button onclick="showAddReminderSheet()" id="txt-addReminderBtn" style="background:var(--green);color:#fff;border:none;border-radius:50px;padding:6px 14px;font-family:DM Sans,sans-serif;font-size:12px;font-weight:600;cursor:pointer">+ Add</button>
       </div>
       <div id="remindersList" style="display:flex;flex-direction:column;gap:10px">
         <!-- Rendered by JS -->
@@ -605,8 +607,8 @@ sb.auth.onAuthStateChange(function(event, session) {
     </div>
     <!-- Notes -->
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:12px">
-      <div style="font-size:15px;font-weight:600;color:var(--t1)">Notes</div>
-      <button onclick="showNoteSheet()" style="background:var(--green);color:#fff;border:none;border-radius:50px;padding:7px 16px;font-family:DM Sans,sans-serif;font-size:13px;font-weight:500;cursor:pointer">+ Add Note</button>
+      <div style="font-size:15px;font-weight:600;color:var(--t1)" id="txt-notesHeader">Notes</div>
+      <button onclick="showNoteSheet()" id="txt-addNoteBtn" style="background:var(--green);color:#fff;border:none;border-radius:50px;padding:7px 16px;font-family:DM Sans,sans-serif;font-size:13px;font-weight:500;cursor:pointer">+ Add Note</button>
     </div>
     <div id="notesList"></div>
   </div>
@@ -684,6 +686,9 @@ sb.auth.onAuthStateChange(function(event, session) {
         </div>
         <button id="notifToggle" class="toggle" onclick="enableNotifications()" aria-label="Enable notifications" style="border:none;padding:0"></button>
       </div>
+      <div style="padding:0 16px 14px">
+        <button onclick="sendTestNotification()" id="txt-sendTestBtn" style="width:100%;padding:10px;background:var(--card2);color:var(--t1);border:1.5px solid var(--border);border-radius:12px;font-family:DM Sans,sans-serif;font-size:13px;font-weight:600;cursor:pointer">🔔 Send test notification</button>
+      </div>
     </div>
 
     <!-- Settings -->
@@ -711,20 +716,10 @@ sb.auth.onAuthStateChange(function(event, session) {
 <div class="screen" id="s-notif">
   <div style="padding:14px 24px;display:flex;align-items:center;gap:12px;flex-shrink:0">
     <div class="bk" onclick="go('s-home')"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></div>
-    <div style="font-family:'DM Serif Display',serif;font-size:20px;color:var(--t1)">Notifications</div>
+    <div style="font-family:'DM Serif Display',serif;font-size:20px;color:var(--t1)" id="txt-notifHeader">Notifications</div>
   </div>
-  <div style="padding:0 24px;padding-bottom:110px">
-    <div style="background:var(--card);border:1.5px solid var(--border);border-radius:18px;padding:16px;display:flex;gap:12px;margin-bottom:10px">
-      <div style="width:44px;height:44px;border-radius:14px;background:var(--green-l);display:flex;align-items:center;justify-content:center;flex-shrink:0">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="1.6" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-      </div>
-      <div style="flex:1">
-        <div style="font-size:14px;font-weight:600;color:var(--t1);margin-bottom:3px" id="notif1">Event coming up</div>
-        <div style="font-size:12px;color:var(--t2);line-height:1.5">Time to start planning your campaign</div>
-        <div style="font-size:11px;color:var(--t3);margin-top:5px">1 hour ago</div>
-      </div>
-      <div style="width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0;margin-top:4px"></div>
-    </div>
+  <div style="padding:0 24px;padding-bottom:110px" id="notifListContainer">
+    <!-- populated by renderNotifList() -->
   </div>
 </div>
 
@@ -811,26 +806,26 @@ sb.auth.onAuthStateChange(function(event, session) {
   <div class="sheet">
     <div class="handle"></div>
     <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
-      <div style="font-family:'DM Serif Display',serif;font-size:22px;color:var(--t1)">Custom Event</div>
+      <div id="txt-customEventTitle" style="font-family:'DM Serif Display',serif;font-size:22px;color:var(--t1)">Custom Event</div>
       <div style="width:8px;height:8px;border-radius:50%;background:var(--gold)"></div>
     </div>
-    <div style="font-size:13px;color:var(--t2);margin-bottom:24px">Auto-placed in your timeline by date</div>
+    <div id="txt-autoPlaced" style="font-size:13px;color:var(--t2);margin-bottom:24px">Auto-placed in your timeline by date</div>
     <div style="margin-bottom:16px">
-      <div class="lbl">Event Name</div>
+      <div class="lbl" id="txt-eventNameLbl">Event Name</div>
       <input id="evName" class="inp" placeholder="e.g. Business Anniversary">
     </div>
     <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:24px">
       <div>
-        <div class="lbl">Start Date</div>
+        <div class="lbl" id="txt-startDate">Start Date</div>
         <input id="evStart" class="inp" type="date" style="direction:ltr">
       </div>
       <div>
-        <div class="lbl">End Date</div>
+        <div class="lbl" id="txt-endDate">End Date</div>
         <input id="evEnd" class="inp" type="date" style="direction:ltr">
       </div>
     </div>
-    <button class="btn-gold" onclick="addCustomEvent()" style="margin-bottom:10px">Add to Timeline</button>
-    <button class="btn-outline" onclick="closeAddSheet()">Cancel</button>
+    <button class="btn-gold" onclick="addCustomEvent()" id="txt-addTimeline" style="margin-bottom:10px">Add to Timeline</button>
+    <button class="btn-outline" onclick="closeAddSheet()" id="txt-cancelBtn">Cancel</button>
   </div>
 </div>
 
@@ -849,7 +844,7 @@ sb.auth.onAuthStateChange(function(event, session) {
     </div>
     <div style="position:sticky;bottom:0;background:var(--card);padding-top:16px">
     <button class="btn" onclick="addNote()" style="margin-bottom:10px" id="txt-saveNote">Save Note</button>
-    <button class="btn-outline" onclick="closeNoteSheet()">Cancel</button>
+    <button class="btn-outline" onclick="closeNoteSheet()" id="txt-cancelNote">Cancel</button>
     </div>
   </div>
 </div>
@@ -1121,6 +1116,33 @@ var STRINGS = {
     notifInstallFirst: 'Add to Home Screen first, then enable from there',
     notifNotSupported: 'Notifications not supported on this device',
     notifTestBody: 'You\'ll be notified before your next event.',
+    // Errors & status
+    errorPrefix: 'Error: ',
+    pleaseFillAll: 'Please fill in all fields',
+    passwordMin: 'Password must be at least 6 characters',
+    creatingAccount: 'Creating account…',
+    welcomeStart: 'Welcome! Let\'s get started',
+    enterEmailPass: 'Please enter email and password',
+    signingIn: 'Signing in…',
+    welcomeBackName: 'Welcome back, ',
+    translating: 'Translating…',
+    reminderRemoved: 'Reminder removed',
+    reminderSet: 'Reminder set',
+    customBadge: 'Custom',
+    noEvents: 'No events',
+    noRemindersHint: 'No reminders yet — tap + Add to create one',
+    daysShort: 'days',
+    daysOne: '1 day',
+    daysWeek: '1 week',
+    daysTwoWeeks: '2 weeks',
+    daysMonth: '1 month',
+    daysTwoMonths: '2 months',
+    beforeWord: 'before',
+    sendTest: '🔔 Send test notification',
+    testSent: '🔔 Test sent',
+    confirmDelete: 'Delete this event?',
+    addBtn: '+ Add',
+    monthsShort: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
   },
   ar: {
     home: 'الرئيسية', calendar: 'التقويم', account: 'حسابي',
@@ -1222,8 +1244,50 @@ var STRINGS = {
     notifInstallFirst: 'أضف التطبيق للشاشة الرئيسية أولاً، ثم فعّل من هناك',
     notifNotSupported: 'الإشعارات غير مدعومة على هذا الجهاز',
     notifTestBody: 'سيصلك تنبيه قبل الحدث القادم.',
+    // Errors & status
+    errorPrefix: 'خطأ: ',
+    pleaseFillAll: 'الرجاء تعبئة جميع الحقول',
+    passwordMin: 'كلمة المرور 6 أحرف على الأقل',
+    creatingAccount: 'جاري إنشاء الحساب…',
+    welcomeStart: 'أهلاً! يلا نبدأ',
+    enterEmailPass: 'أدخل البريد وكلمة المرور',
+    signingIn: 'جاري تسجيل الدخول…',
+    welcomeBackName: 'أهلاً بعودتك، ',
+    translating: 'جاري الترجمة…',
+    reminderRemoved: 'تم حذف التذكير',
+    reminderSet: 'تم إعداد التذكير',
+    customBadge: 'مخصص',
+    noEvents: 'لا توجد أحداث',
+    noRemindersHint: 'لا توجد تذكيرات بعد — اضغط + إضافة لإنشاء واحد',
+    daysShort: 'يوم',
+    daysOne: 'يوم واحد',
+    daysWeek: 'أسبوع',
+    daysTwoWeeks: 'أسبوعان',
+    daysMonth: 'شهر',
+    daysTwoMonths: 'شهران',
+    beforeWord: 'قبل',
+    sendTest: '🔔 إرسال إشعار تجريبي',
+    testSent: '🔔 تم الإرسال',
+    confirmDelete: 'هل تريد حذف هذا الحدث؟',
+    addBtn: '+ إضافة',
+    monthsShort: ['ينا','فبر','مار','أبر','ماي','يون','يول','أغس','سبت','أكت','نوف','ديس'],
   }
 };
+
+
+// Map app language to a BCP-47 locale for Intl APIs.
+function getLocale() {
+  var map = {
+    ar:'ar', en:'en-US', fr:'fr-FR', es:'es-ES', de:'de-DE', zh:'zh-CN', ja:'ja-JP',
+    tr:'tr-TR', pt:'pt-PT', ru:'ru-RU', ko:'ko-KR', hi:'hi-IN', it:'it-IT', nl:'nl-NL',
+    fa:'fa-IR', ur:'ur-PK', id:'id-ID', ms:'ms-MY', he:'he-IL'
+  };
+  return map[lang] || 'en-US';
+}
+function fmtDateShort(d) {
+  try { return d.toLocaleDateString(getLocale(), {month:'short', day:'numeric'}); }
+  catch(e) { return d.toLocaleDateString('en-US', {month:'short', day:'numeric'}); }
+}
 
 function t(key) {
   var s = STRINGS[lang] || STRINGS.en;
@@ -1264,6 +1328,29 @@ function applyAllTranslations() {
     'txt-sendFeedback': 'sendFeedback',
     'txt-notifSectionTitle': 'notifSectionTitle',
     'txt-notifSectionDesc': 'notifSectionDesc',
+    'txt-notifHeader': 'notifications',
+    'txt-sendTestBtn': 'sendTest',
+    'txt-filterAll': 'all',
+    'txt-filterNational': 'national',
+    'txt-filterReligious': 'religious',
+    'txt-filterSeasonal': 'seasonal',
+    'txt-filterCustom': 'custom',
+    'txt-addReminderBtn': 'addBtn',
+    'txt-notesHeader': 'notes',
+    'txt-addNoteBtn': 'addNote',
+    'txt-heroDaysLeft': 'daysLeft',
+    'txt-detailDaysLeft': 'daysLeft',
+    'txt-customEvent': 'customEvent',
+    'txt-customEventTitle': 'customEvent',
+    'txt-nextEvent': 'nextEvent',
+    'txt-autoPlaced': 'autoPlaced',
+    'txt-eventNameLbl': 'eventName',
+    'txt-startDate': 'startDate',
+    'txt-endDate': 'endDate',
+    'txt-addTimeline': 'addTimeline',
+    'txt-cancelBtn': 'cancel',
+    'txt-cancelNote': 'cancel',
+    'txt-cancelReminder': 'cancel',
     'btnGetStarted': 'getStarted',
     'btnHaveAccount': 'haveAccount',
     'tab-signup': 'signUp',
@@ -1344,7 +1431,7 @@ async function fetchCountryEvents(countryCode, year) {
         return {
           name: h.name,
           date: date,
-          label: new Date(date + 'T12:00:00').toLocaleDateString('en-US', {month:'short', day:'numeric'}),
+          label: fmtDateShort(new Date(date + 'T12:00:00')),
           type: h.type ? h.type[0].toLowerCase() : 'national',
           color: color,
           bg: bg,
@@ -1448,7 +1535,7 @@ async function translateUI(targetLang) {
   var manualLangs = ['en','ar','fr','es','de','zh','ja','tr'];
   if (manualLangs.includes(targetLang)) return;
   
-  toast('Translating...');
+  toast(t('translating'));
   
   // Get all translatable elements
   var elements = document.querySelectorAll('[data-translate]');
@@ -1576,7 +1663,7 @@ function setFeedbackType(el, type) {
 
 async function submitFeedback() {
   var text = document.getElementById('feedbackText').value.trim();
-  if (!text) { toast('Please write your feedback'); return; }
+  if (!text) { toast(t('writeFeedback')); return; }
   
   try {
     var userResult = await sb.auth.getUser();
@@ -1707,11 +1794,16 @@ async function saveReminder() {
     note: note,
     enabled: true,
     id: Date.now(),
+    eventName: key,
+    eventDate: currentEvent.date,
     customDate: selectedReminderType === 'custom' ? customDate : null,
-    customTime: selectedReminderType === 'custom' ? customTime : null
+    customTime: selectedReminderType === 'custom' ? customTime : null,
+    fired: false
   };
   
   eventReminders[key].push(reminder);
+  scheduleLocalNotification(reminder);
+  saveRemindersToStorage();
   
   // Save to Supabase
   try {
@@ -1729,7 +1821,101 @@ async function saveReminder() {
   
   renderReminders();
   closeReminderSheet();
-  toast('✓ Reminder set ' + selectedReminderDays + ' days before');
+  toast('✓ ' + t('reminderSet'));
+}
+
+// Compute when a reminder should fire (returns Date or null)
+function getReminderFireTime(r) {
+  if (r.customDate) {
+    var dt = r.customDate + 'T' + (r.customTime || '09:00') + ':00';
+    var d = new Date(dt);
+    return isNaN(d.getTime()) ? null : d;
+  }
+  if (!r.eventDate) return null;
+  var ed = new Date(r.eventDate + 'T09:00:00');
+  if (isNaN(ed.getTime())) return null;
+  ed.setDate(ed.getDate() - (r.days || 0));
+  return ed;
+}
+
+// Schedule a single in-session timer; will fire only while the app is open.
+// For background delivery on iOS we'd need server-side push (OneSignal).
+function scheduleLocalNotification(r) {
+  if (!r || !r.enabled) return;
+  var fire = getReminderFireTime(r);
+  if (!fire) return;
+  var ms = fire.getTime() - Date.now();
+  if (ms <= 0) return; // overdue — handled by checkDueReminders on open
+  // Cap at ~24 days (setTimeout max ~24.8 days). Long ones get re-checked on app open.
+  if (ms > 86400000 * 20) return;
+  setTimeout(function() { fireReminder(r); }, ms);
+}
+
+function fireReminder(r) {
+  if (!r || r.fired) return;
+  r.fired = true;
+  saveRemindersToStorage();
+  var title = r.eventName || 'Marketing Planner';
+  var body = (r.note ? r.note + ' — ' : '') + 'Reminder for your event';
+  showLocalNotification(title, body, { tag: 'mp-reminder-' + r.id });
+}
+
+function showLocalNotification(title, body, opts) {
+  opts = opts || {};
+  // Always show in-app toast as a fallback.
+  try { toast('🔔 ' + title); } catch(e) {}
+  if (!('Notification' in window) || Notification.permission !== 'granted') return;
+  try {
+    if (navigator.serviceWorker && navigator.serviceWorker.ready) {
+      navigator.serviceWorker.ready.then(function(reg) {
+        reg.showNotification(title, {
+          body: body || '',
+          icon: "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%231A6B3C'/%3E%3Crect x='20' y='25' width='60' height='55' rx='8' fill='none' stroke='white' stroke-width='5'/%3E%3C/svg%3E",
+          tag: opts.tag || 'mp-notif',
+          renotify: true
+        });
+      });
+    } else {
+      new Notification(title, { body: body });
+    }
+  } catch(e) {}
+}
+
+// On app open, scan all reminders and fire any that are due but unfired.
+function checkDueReminders() {
+  try {
+    loadRemindersFromStorage();
+    var now = Date.now();
+    Object.keys(eventReminders).forEach(function(key) {
+      (eventReminders[key] || []).forEach(function(r) {
+        if (!r.enabled || r.fired) return;
+        var fire = getReminderFireTime(r);
+        if (!fire) return;
+        if (fire.getTime() <= now) {
+          fireReminder(r);
+        } else {
+          scheduleLocalNotification(r);
+        }
+      });
+    });
+  } catch(e) {}
+}
+
+function saveRemindersToStorage() {
+  try { localStorage.setItem('mp_reminders', JSON.stringify(eventReminders)); } catch(e) {}
+}
+
+function loadRemindersFromStorage() {
+  try {
+    var s = localStorage.getItem('mp_reminders');
+    if (s) {
+      var parsed = JSON.parse(s);
+      // Merge: keep existing in-memory, overlay stored
+      Object.keys(parsed).forEach(function(k) {
+        if (!eventReminders[k]) eventReminders[k] = parsed[k];
+      });
+    }
+  } catch(e) {}
 }
 
 function renderReminders() {
@@ -1739,14 +1925,20 @@ function renderReminders() {
   var reminders = eventReminders[key] || [];
   
   if (!reminders.length) {
-    c.innerHTML = '<div style="text-align:center;padding:20px 0;color:var(--t3);font-size:13px">No reminders yet — tap + Add to create one</div>';
+    c.innerHTML = '<div style="text-align:center;padding:20px 0;color:var(--t3);font-size:13px">' + t('noRemindersHint') + '</div>';
     return;
   }
   
   c.innerHTML = '';
   reminders.forEach(function(r, i) {
     var tl = typeLabels[r.type] || typeLabels.custom;
-    var daysLabel = r.days === 1 ? '1 day' : r.days === 7 ? '1 week' : r.days === 14 ? '2 weeks' : r.days === 30 ? '1 month' : r.days === 60 ? '2 months' : r.days + ' days';
+    var daysLabel;
+    if (r.days === 1) daysLabel = t('daysOne');
+    else if (r.days === 7) daysLabel = t('daysWeek');
+    else if (r.days === 14) daysLabel = t('daysTwoWeeks');
+    else if (r.days === 30) daysLabel = t('daysMonth');
+    else if (r.days === 60) daysLabel = t('daysTwoMonths');
+    else daysLabel = r.days + ' ' + t('daysShort');
     if (r.customDate) daysLabel = r.customDate + (r.customTime ? ' ' + r.customTime : '');
     
     var div = document.createElement('div');
@@ -1755,7 +1947,7 @@ function renderReminders() {
     div.innerHTML = '<div style="width:36px;height:36px;border-radius:10px;background:var(--card);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;flex-shrink:0"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="1.8" stroke-linecap="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg></div>'
       + '<div style="flex:1">'
       + '<div style="font-size:13px;font-weight:600;color:var(--t1)">' + tl.label + '</div>'
-      + '<div style="font-size:11px;color:var(--t2);margin-top:2px">' + daysLabel + ' before' + (r.note ? ' · ' + r.note : '') + '</div>'
+      + '<div style="font-size:11px;color:var(--t2);margin-top:2px">' + daysLabel + ' ' + t('beforeWord') + (r.note ? ' · ' + r.note : '') + '</div>'
       + '</div>'
       + '<div class="toggle ' + (r.enabled ? 'on' : '') + '" onclick="toggleReminder(' + i + ')"></div>'
       + '<div onclick="deleteReminder(' + i + ')" style="width:24px;height:24px;border-radius:50%;background:var(--card);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;flex-shrink:0">'
@@ -1770,6 +1962,7 @@ function toggleReminder(i) {
   var key = currentEvent ? currentEvent.name : '';
   if (eventReminders[key] && eventReminders[key][i]) {
     eventReminders[key][i].enabled = !eventReminders[key][i].enabled;
+    try { saveRemindersToStorage(); } catch(e) {}
     renderReminders();
   }
 }
@@ -1778,8 +1971,9 @@ function deleteReminder(i) {
   var key = currentEvent ? currentEvent.name : '';
   if (eventReminders[key]) {
     eventReminders[key].splice(i, 1);
+    try { saveRemindersToStorage(); } catch(e) {}
     renderReminders();
-    toast('Reminder removed');
+    toast(t('reminderRemoved'));
   }
 }
 
@@ -1917,7 +2111,7 @@ function updateClock() {
   var el = document.getElementById('statusTime');
   if (el) el.textContent = h + ':' + m;
   var ld = document.getElementById('liveDate');
-  if (ld) ld.textContent = n.toLocaleDateString('en-US', {month:'short', day:'numeric'});
+  if (ld) ld.textContent = fmtDateShort(n);
 }
 setInterval(updateClock, 1000);
 updateClock();
@@ -1930,6 +2124,7 @@ function go(id) {
   if (el) { el.classList.add('active'); el.scrollTop = 0; }
   if (id === 's-calendar') renderCalendar();
   if (id === 's-profile') { try { refreshNotifToggle(); } catch(e) {} }
+  if (id === 's-notif') { try { renderNotifList(); } catch(e) {} }
 }
 
 function navTo(i) {
@@ -2140,6 +2335,67 @@ function refreshNotifToggle() {
   updateNotifToggleUI(Notification.permission === 'granted');
 }
 
+// Send a test notification — useful for verifying the system works.
+function sendTestNotification() {
+  if (!('Notification' in window)) { toast(t('notifNotSupported')); return; }
+  if (Notification.permission !== 'granted') {
+    toast(t('notifDeniedHint'));
+    return;
+  }
+  showLocalNotification('Marketing Planner', t('notifTestBody'), { tag: 'mp-test-' + Date.now() });
+  toast(t('testSent'));
+}
+
+// Render the in-app notifications list (upcoming + past reminders)
+function renderNotifList() {
+  var container = document.getElementById('notifListContainer');
+  if (!container) return;
+  try { loadRemindersFromStorage(); } catch(e) {}
+
+  var items = [];
+  Object.keys(eventReminders).forEach(function(key) {
+    (eventReminders[key] || []).forEach(function(r) {
+      var fire = getReminderFireTime(r);
+      if (!fire) return;
+      items.push({ r: r, fire: fire, event: key });
+    });
+  });
+  items.sort(function(a,b){ return a.fire.getTime() - b.fire.getTime(); });
+
+  if (!items.length) {
+    container.innerHTML = '<div style="text-align:center;padding:48px 24px;color:var(--t3);font-size:13px">' +
+      (lang==='ar' ? 'لا توجد تنبيهات بعد. أضف تذكيرات من تفاصيل أي حدث.' :
+        'No notifications yet. Add reminders from any event\'s details.') +
+      '</div>';
+    return;
+  }
+
+  var now = Date.now();
+  container.innerHTML = '';
+  items.forEach(function(it) {
+    var isPast = it.fire.getTime() <= now;
+    var div = document.createElement('div');
+    div.style.cssText = 'background:var(--card);border:1.5px solid var(--border);border-radius:18px;padding:14px;display:flex;gap:12px;margin-bottom:10px;opacity:' + (isPast ? '0.7' : '1');
+    var color = isPast ? 'var(--t2)' : 'var(--green)';
+    var bg = isPast ? 'var(--card2)' : 'var(--green-l)';
+    var when;
+    try { when = it.fire.toLocaleDateString(getLocale(), {month:'short', day:'numeric'}) + ' · ' + it.fire.toLocaleTimeString(getLocale(), {hour:'2-digit', minute:'2-digit'}); }
+    catch(e) { when = it.fire.toDateString(); }
+    div.innerHTML =
+      '<div style="width:44px;height:44px;border-radius:14px;background:' + bg + ';display:flex;align-items:center;justify-content:center;flex-shrink:0">' +
+        '<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="' + color + '" stroke-width="1.6" stroke-linecap="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>' +
+      '</div>' +
+      '<div style="flex:1;min-width:0">' +
+        '<div style="font-size:14px;font-weight:600;color:var(--t1);margin-bottom:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + translateEventName(it.event) + '</div>' +
+        '<div style="font-size:12px;color:var(--t2);line-height:1.5">' + (it.r.note || t('notifTestBody')) + '</div>' +
+        '<div style="font-size:11px;color:var(--t3);margin-top:5px">' + when + '</div>' +
+      '</div>' +
+      (it.r.fired ? '<div style="width:8px;height:8px;border-radius:50%;background:var(--border);flex-shrink:0;margin-top:4px"></div>' :
+        '<div style="width:8px;height:8px;border-radius:50%;background:var(--green);flex-shrink:0;margin-top:4px"></div>');
+    container.appendChild(div);
+  });
+}
+
 // ── ONBOARDING ──
 function obNext(step) {
   if (step === 2) {
@@ -2265,13 +2521,13 @@ function renderTimeline() {
       card.appendChild(tag);
     } else if (ev.isCustom) {
       var ctag = document.createElement('div');
-      ctag.style.cssText = 'font-size:9px;font-weight:600;color:var(--gold);letter-spacing:.8px;margin-bottom:4px';
+      ctag.style.cssText = 'font-size:9px;font-weight:600;color:var(--gold);letter-spacing:.8px;margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap';
       ctag.textContent = t('customBadge');
       card.appendChild(ctag);
     }
 
     var nm = document.createElement('div');
-    nm.style.cssText = 'font-size:12px;font-weight:600;color:var(--t1);line-height:1.3;margin-bottom:4px';
+    nm.style.cssText = 'font-size:12px;font-weight:600;color:var(--t1);line-height:1.3;margin-bottom:4px;overflow:hidden;text-overflow:ellipsis;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;word-break:break-word';
     nm.textContent = translateEventName(ev.name);
     card.appendChild(nm);
 
@@ -2294,9 +2550,9 @@ function renderTimeline() {
     }
     card.appendChild(pill);
 
-    if (ev.isCustom) {
+    if (ev.isCustom && !isFirst) {
       var rmBtn = document.createElement('div');
-      rmBtn.style.cssText = 'position:absolute;top:6px;left:6px;width:20px;height:20px;border-radius:50%;background:var(--card2);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer';
+      rmBtn.style.cssText = 'position:absolute;top:6px;right:6px;width:20px;height:20px;border-radius:50%;background:var(--card);border:1px solid var(--border);display:flex;align-items:center;justify-content:center;cursor:pointer;z-index:2';
       rmBtn.innerHTML = '<svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="var(--t2)" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
       rmBtn.addEventListener('click', function(e) {
         e.stopPropagation();
@@ -2333,7 +2589,7 @@ function renderUpcoming() {
     evName.textContent = translateEventName(ev.name);
     var evSub = document.createElement('div');
     evSub.style.cssText = 'font-size:12px;color:var(--t2)';
-    evSub.textContent = (ev.label || ev.dateLabel || '') + (ev.isCustom ? ' · Custom' : ' · ' + (ev.type ? ev.type.charAt(0).toUpperCase() + ev.type.slice(1) : ''));
+    evSub.textContent = (ev.label || ev.dateLabel || '') + (ev.isCustom ? ' · ' + t('customBadge') : ' · ' + (ev.type ? ev.type.charAt(0).toUpperCase() + ev.type.slice(1) : ''));
     info.appendChild(evName);
     info.appendChild(evSub);
 
@@ -2365,7 +2621,7 @@ function renderCalendar() {
     return calFilter === 'all' || e.type === calFilter || (calFilter === 'custom' && e.isCustom);
   });
   if (!evs.length) {
-    c.innerHTML = '<div style="text-align:center;padding:48px 0;color:var(--t3)">No events</div>';
+    c.innerHTML = '<div style="text-align:center;padding:48px 0;color:var(--t3)">' + t('noEvents') + '</div>';
     return;
   }
   evs.forEach(function(ev) {
@@ -2387,7 +2643,7 @@ function renderCalendar() {
     if (ev.isCustom) {
       var badge = document.createElement('span');
       badge.style.cssText = 'font-size:10px;font-weight:600;color:var(--gold);background:var(--gold-l);padding:2px 8px;border-radius:50px';
-      badge.textContent = 'Custom';
+      badge.textContent = t('customBadge');
       row1.appendChild(badge);
     }
     var evSub = document.createElement('div');
@@ -2444,7 +2700,8 @@ async function addCustomEvent() {
   if (!name || !start) { toast(t('enterNameDate')); return; }
   var end = document.getElementById('evEnd').value;
   var sd = new Date(start);
-  var M = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
+  var M = t('monthsShort');
+  if (!Array.isArray(M)) M = ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'];
   var lbl = sd.getDate() + ' ' + M[sd.getMonth()];
   if (end) { var ed = new Date(end); lbl += ' - ' + ed.getDate() + ' ' + M[ed.getMonth()]; }
   var ev = {name: name, dateLabel: lbl, date: start, type: 'custom'};
@@ -2470,8 +2727,24 @@ async function addCustomEvent() {
   toast(t('addedOk'));
 }
 
-function removeCustomEvent(idx) {
+async function removeCustomEvent(idx) {
+  if (!confirm(t('confirmDelete') || 'Delete this event?')) return;
+  var removed = customEvs[idx];
   customEvs.splice(idx, 1);
+  // Best-effort: delete from Supabase if present
+  try {
+    if (removed && removed.dbId) {
+      await sb.from('custom_events').delete().eq('id', removed.dbId);
+    } else if (removed) {
+      var userResult = await sb.auth.getUser();
+      if (userResult.data && userResult.data.user) {
+        await sb.from('custom_events').delete()
+          .eq('user_id', userResult.data.user.id)
+          .eq('name', removed.name)
+          .eq('start_date', removed.date);
+      }
+    }
+  } catch(e) { /* silent */ }
   renderTimeline();
   renderUpcoming();
   updateHero();
@@ -2593,14 +2866,14 @@ async function handleSignUp() {
   var password = document.getElementById('su-password').value;
   var biz = document.getElementById('su-biz').value.trim();
 
-  if (!name || !email || !password) { toast('Please fill all fields'); return; }
-  if (password.length < 6) { toast('Password min 6 characters'); return; }
+  if (!name || !email || !password) { toast(t('pleaseFillAll')); return; }
+  if (password.length < 6) { toast(t('passwordMin')); return; }
 
-  toast('Creating account...');
+  toast(t('creatingAccount'));
 
   try {
     var result = await sb.auth.signUp({ email: email, password: password });
-    if (result.error) { toast('Error: ' + result.error.message); return; }
+    if (result.error) { toast(t('errorPrefix') + result.error.message); return; }
 
     var user = result.data.user;
     if (user) {
@@ -2634,9 +2907,9 @@ async function handleSignUp() {
     
     // Go to onboarding flow
     go('s-lang-select');
-    toast('Welcome! Let\'s set up your account');
+    toast(t('welcomeStart'));
   } catch(e) {
-    toast('Error: ' + e.message);
+    toast(t('errorPrefix') + e.message);
   }
 }
 
@@ -2645,13 +2918,13 @@ async function handleSignIn() {
   var email = document.getElementById('si-email').value.trim();
   var password = document.getElementById('si-password').value;
 
-  if (!email || !password) { toast('Please enter email and password'); return; }
+  if (!email || !password) { toast(t('enterEmailPass')); return; }
 
-  toast('Signing in...');
+  toast(t('signingIn'));
 
   try {
     var result = await sb.auth.signInWithPassword({ email: email, password: password });
-    if (result.error) { toast('Error: ' + result.error.message); return; }
+    if (result.error) { toast(t('errorPrefix') + result.error.message); return; }
 
     // Load profile
     var user = result.data.user;
@@ -2687,13 +2960,13 @@ async function handleSignIn() {
     // Check if profile complete
     if (!userData.name) {
       go('s-lang-select');
-      toast('Let\'s complete your profile');
+      toast(t('welcomeStart'));
     } else {
       go('s-home');
-      toast('Welcome back, ' + userData.name + '!');
+      toast(t('welcomeBackName') + userData.name + '!');
     }
   } catch(e) {
-    toast('Error: ' + e.message);
+    toast(t('errorPrefix') + e.message);
   }
 }
 
@@ -2783,6 +3056,12 @@ if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('/MP/sw.js').catch(function() {});
   });
 }
+
+// Check for due reminders when app opens and whenever it returns to foreground
+window.addEventListener('load', function() { try { checkDueReminders(); } catch(e) {} });
+document.addEventListener('visibilitychange', function() {
+  if (!document.hidden) { try { checkDueReminders(); } catch(e) {} }
+});
 
 </script>
 
@@ -2879,7 +3158,7 @@ if ('serviceWorker' in navigator) {
 
     <div style="position:sticky;bottom:0;background:var(--card);padding-top:10px">
       <button onclick="saveReminder()" class="btn" style="margin-bottom:10px">Set Reminder</button>
-      <button onclick="closeReminderSheet()" class="btn-outline">Cancel</button>
+      <button onclick="closeReminderSheet()" class="btn-outline" id="txt-cancelReminder">Cancel</button>
     </div>
   </div>
 </div>
