@@ -821,6 +821,11 @@ sb.auth.onAuthStateChange(function(event, session) {
         <span style="font-size:14px;color:var(--t1);flex:1" id="txt-language">Language</span>
         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--t3)" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
       </div>
+      <div onclick="handleRefreshEvents()" style="padding:16px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border);cursor:pointer">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--t2)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>
+        <span style="font-size:14px;color:var(--t1);flex:1" id="txt-refreshEvents">Refresh Events</span>
+        <span id="lastRefreshLabel" style="font-size:11px;color:var(--t3)"></span>
+      </div>
       <div onclick="go('s-splash')" style="padding:16px;display:flex;align-items:center;gap:12px;cursor:pointer">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="1.7" stroke-linecap="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
         <span style="font-size:14px;color:var(--red);flex:1" id="txt-signOut">Sign Out</span>
@@ -1028,90 +1033,202 @@ const LANGS=[
 ];
 
 const COUNTRIES=[
-  {code:'SA',name:'Saudi Arabia',flag:'🇸🇦',region:'Middle East',events:[
-    {name:'Eid Al-Adha',date:'2026-06-06',label:'Jun 6',type:'religious',color:'var(--green)',bg:'var(--green-l)'},
-    {name:'Summer Season',date:'2026-06-21',label:'Jun-Sep',type:'seasonal',color:'var(--blue)',bg:'var(--blue-l)'},
-    {name:'Saudi National Day',date:'2026-09-23',label:'Sep 23',type:'national',color:'var(--gold)',bg:'var(--gold-l)'},
-    {name:'Riyadh Season',date:'2026-10-01',label:'Oct-Jan',type:'seasonal',color:'var(--blue)',bg:'var(--blue-l)'},
-    {name:'Black Friday',date:'2026-11-28',label:'Nov 28',type:'seasonal',color:'var(--t2)',bg:'var(--card2)',dim:true},
-    {name:'Ramadan',date:'2027-03-01',label:'Mar 2027',type:'religious',color:'var(--t2)',bg:'var(--card2)',dim:true}
-  ]},
-  {code:'AE',name:'UAE',flag:'🇦🇪',region:'Middle East',events:[
-    {name:'Eid Al-Adha',date:'2026-06-06',label:'Jun 6',type:'religious',color:'var(--green)',bg:'var(--green-l)'},
-    {name:'UAE National Day',date:'2026-12-02',label:'Dec 2',type:'national',color:'var(--gold)',bg:'var(--gold-l)'},
-    {name:'White Friday',date:'2026-11-28',label:'Nov 28',type:'seasonal',color:'var(--blue)',bg:'var(--blue-l)',dim:true}
-  ]},
-  {code:'EG',name:'Egypt',flag:'🇪🇬',region:'Middle East',events:[
-    {name:'Eid Al-Adha',date:'2026-06-06',label:'Jun 6',type:'religious',color:'var(--green)',bg:'var(--green-l)'},
-    {name:'Independence Day',date:'2026-07-23',label:'Jul 23',type:'national',color:'var(--gold)',bg:'var(--gold-l)'},
-    {name:'Revolution Day',date:'2027-01-25',label:'Jan 25',type:'national',color:'var(--gold)',bg:'var(--gold-l)',dim:true}
-  ]},
-  {code:'KW',name:'Kuwait',flag:'🇰🇼',region:'Middle East',events:[
-    {name:'Eid Al-Adha',date:'2026-06-06',label:'Jun 6',type:'religious',color:'var(--green)',bg:'var(--green-l)'},
-    {name:'National Day',date:'2027-02-25',label:'Feb 25',type:'national',color:'var(--gold)',bg:'var(--gold-l)',dim:true}
-  ]},
-  {code:'US',name:'United States',flag:'🇺🇸',region:'Americas',events:[
-    {name:'Independence Day',date:'2026-07-04',label:'Jul 4',type:'national',color:'var(--gold)',bg:'var(--gold-l)'},
-    {name:'Halloween',date:'2026-10-31',label:'Oct 31',type:'seasonal',color:'var(--gold)',bg:'var(--gold-l)'},
-    {name:'Thanksgiving',date:'2026-11-26',label:'Nov 26',type:'national',color:'var(--gold)',bg:'var(--gold-l)'},
-    {name:'Black Friday',date:'2026-11-27',label:'Nov 27',type:'seasonal',color:'var(--blue)',bg:'var(--blue-l)'},
-    {name:'Christmas',date:'2026-12-25',label:'Dec 25',type:'religious',color:'var(--green)',bg:'var(--green-l)',dim:true}
-  ]},
-  {code:'GB',name:'United Kingdom',flag:'🇬🇧',region:'Europe',events:[
-    {name:'Summer Season',date:'2026-06-21',label:'Jun-Sep',type:'seasonal',color:'var(--blue)',bg:'var(--blue-l)'},
-    {name:'Black Friday',date:'2026-11-27',label:'Nov 27',type:'seasonal',color:'var(--blue)',bg:'var(--blue-l)'},
-    {name:'Christmas',date:'2026-12-25',label:'Dec 25',type:'religious',color:'var(--green)',bg:'var(--green-l)',dim:true}
-  ]},
-  {code:'FR',name:'France',flag:'🇫🇷',region:'Europe',events:[
-    {name:'Fete Nationale',date:'2026-07-14',label:'Jul 14',type:'national',color:'var(--gold)',bg:'var(--gold-l)'},
-    {name:'Black Friday',date:'2026-11-27',label:'Nov 27',type:'seasonal',color:'var(--blue)',bg:'var(--blue-l)',dim:true},
-    {name:'Noel',date:'2026-12-25',label:'Dec 25',type:'religious',color:'var(--green)',bg:'var(--green-l)',dim:true}
-  ]},
-  {code:'DE',name:'Germany',flag:'🇩🇪',region:'Europe',events:[
-    {name:'Oktoberfest',date:'2026-09-19',label:'Sep 19',type:'seasonal',color:'var(--gold)',bg:'var(--gold-l)'},
-    {name:'Black Friday',date:'2026-11-27',label:'Nov 27',type:'seasonal',color:'var(--blue)',bg:'var(--blue-l)',dim:true},
-    {name:'Weihnachten',date:'2026-12-25',label:'Dec 25',type:'religious',color:'var(--green)',bg:'var(--green-l)',dim:true}
-  ]},
-  {code:'TR',name:'Turkey',flag:'🇹🇷',region:'Europe',events:[
-    {name:'Eid Al-Adha',date:'2026-06-06',label:'Jun 6',type:'religious',color:'var(--green)',bg:'var(--green-l)'},
-    {name:'Republic Day',date:'2026-10-29',label:'Oct 29',type:'national',color:'var(--gold)',bg:'var(--gold-l)'},
-    {name:'Black Friday',date:'2026-11-27',label:'Nov 27',type:'seasonal',color:'var(--blue)',bg:'var(--blue-l)',dim:true}
-  ]},
-  {code:'CN',name:'China',flag:'🇨🇳',region:'Asia',events:[
-    {name:'Chinese New Year',date:'2027-01-29',label:'Jan 29',type:'national',color:'var(--green)',bg:'var(--green-l)',dim:true},
-    {name:'National Day',date:'2026-10-01',label:'Oct 1',type:'national',color:'var(--gold)',bg:'var(--gold-l)'},
-    {name:'Mid-Autumn Festival',date:'2026-09-24',label:'Sep 24',type:'religious',color:'var(--gold)',bg:'var(--gold-l)'},
-    {name:'Singles Day',date:'2026-11-11',label:'Nov 11',type:'seasonal',color:'var(--blue)',bg:'var(--blue-l)',dim:true}
-  ]},
-  {code:'JP',name:'Japan',flag:'🇯🇵',region:'Asia',events:[
-    {name:'Tanabata',date:'2026-07-07',label:'Jul 7',type:'national',color:'var(--blue)',bg:'var(--blue-l)'},
-    {name:'Obon',date:'2026-08-13',label:'Aug 13',type:'religious',color:'var(--gold)',bg:'var(--gold-l)'},
-    {name:'Christmas',date:'2026-12-25',label:'Dec 25',type:'seasonal',color:'var(--green)',bg:'var(--green-l)',dim:true}
-  ]},
-  {code:'KR',name:'South Korea',flag:'🇰🇷',region:'Asia',events:[
-    {name:'Chuseok',date:'2026-09-24',label:'Sep 24',type:'national',color:'var(--gold)',bg:'var(--gold-l)'},
-    {name:'Pepero Day',date:'2026-11-11',label:'Nov 11',type:'seasonal',color:'var(--blue)',bg:'var(--blue-l)',dim:true},
-    {name:'Christmas',date:'2026-12-25',label:'Dec 25',type:'seasonal',color:'var(--green)',bg:'var(--green-l)',dim:true}
-  ]},
-  {code:'IN',name:'India',flag:'🇮🇳',region:'Asia',events:[
-    {name:'Independence Day',date:'2026-08-15',label:'Aug 15',type:'national',color:'var(--gold)',bg:'var(--gold-l)'},
-    {name:'Diwali',date:'2026-11-08',label:'Nov 8',type:'religious',color:'var(--gold)',bg:'var(--gold-l)',dim:true}
-  ]},
-  {code:'BR',name:'Brazil',flag:'🇧🇷',region:'Americas',events:[
-    {name:'Independence Day',date:'2026-09-07',label:'Sep 7',type:'national',color:'var(--gold)',bg:'var(--gold-l)'},
-    {name:'Black Friday',date:'2026-11-27',label:'Nov 27',type:'seasonal',color:'var(--blue)',bg:'var(--blue-l)',dim:true},
-    {name:'Natal',date:'2026-12-25',label:'Dec 25',type:'religious',color:'var(--green)',bg:'var(--green-l)',dim:true}
-  ]},
-  {code:'NG',name:'Nigeria',flag:'🇳🇬',region:'Africa',events:[
-    {name:'Independence Day',date:'2026-10-01',label:'Oct 1',type:'national',color:'var(--gold)',bg:'var(--gold-l)'},
-    {name:'Christmas',date:'2026-12-25',label:'Dec 25',type:'religious',color:'var(--green)',bg:'var(--green-l)',dim:true}
-  ]},
-  {code:'ZA',name:'South Africa',flag:'🇿🇦',region:'Africa',events:[
-    {name:'Freedom Day',date:'2027-04-27',label:'Apr 27',type:'national',color:'var(--gold)',bg:'var(--gold-l)',dim:true},
-    {name:'Black Friday',date:'2026-11-27',label:'Nov 27',type:'seasonal',color:'var(--blue)',bg:'var(--blue-l)',dim:true},
-    {name:'Christmas',date:'2026-12-25',label:'Dec 25',type:'religious',color:'var(--green)',bg:'var(--green-l)',dim:true}
-  ]}
+  {code:'WORLD',name:'World',flag:'🌍',region:'Worldwide',events:[]},
+  {code:'SA',name:'Saudi Arabia',flag:'🇸🇦',region:'Middle East',events:[]},
+  {code:'AE',name:'UAE',flag:'🇦🇪',region:'Middle East',events:[]},
+  {code:'KW',name:'Kuwait',flag:'🇰🇼',region:'Middle East',events:[]},
+  {code:'QA',name:'Qatar',flag:'🇶🇦',region:'Middle East',events:[]},
+  {code:'BH',name:'Bahrain',flag:'🇧🇭',region:'Middle East',events:[]},
+  {code:'OM',name:'Oman',flag:'🇴🇲',region:'Middle East',events:[]},
+  {code:'JO',name:'Jordan',flag:'🇯🇴',region:'Middle East',events:[]},
+  {code:'LB',name:'Lebanon',flag:'🇱🇧',region:'Middle East',events:[]},
+  {code:'SY',name:'Syria',flag:'🇸🇾',region:'Middle East',events:[]},
+  {code:'IQ',name:'Iraq',flag:'🇮🇶',region:'Middle East',events:[]},
+  {code:'YE',name:'Yemen',flag:'🇾🇪',region:'Middle East',events:[]},
+  {code:'PS',name:'Palestine',flag:'🇵🇸',region:'Middle East',events:[]},
+  {code:'IL',name:'Israel',flag:'🇮🇱',region:'Middle East',events:[]},
+  {code:'IR',name:'Iran',flag:'🇮🇷',region:'Middle East',events:[]},
+  {code:'EG',name:'Egypt',flag:'🇪🇬',region:'Middle East',events:[]},
+  {code:'TR',name:'Turkey',flag:'🇹🇷',region:'Middle East',events:[]},
+  {code:'US',name:'United States',flag:'🇺🇸',region:'Americas',events:[]},
+  {code:'CA',name:'Canada',flag:'🇨🇦',region:'Americas',events:[]},
+  {code:'MX',name:'Mexico',flag:'🇲🇽',region:'Americas',events:[]},
+  {code:'BR',name:'Brazil',flag:'🇧🇷',region:'Americas',events:[]},
+  {code:'AR',name:'Argentina',flag:'🇦🇷',region:'Americas',events:[]},
+  {code:'CL',name:'Chile',flag:'🇨🇱',region:'Americas',events:[]},
+  {code:'CO',name:'Colombia',flag:'🇨🇴',region:'Americas',events:[]},
+  {code:'PE',name:'Peru',flag:'🇵🇪',region:'Americas',events:[]},
+  {code:'VE',name:'Venezuela',flag:'🇻🇪',region:'Americas',events:[]},
+  {code:'UY',name:'Uruguay',flag:'🇺🇾',region:'Americas',events:[]},
+  {code:'EC',name:'Ecuador',flag:'🇪🇨',region:'Americas',events:[]},
+  {code:'BO',name:'Bolivia',flag:'🇧🇴',region:'Americas',events:[]},
+  {code:'PY',name:'Paraguay',flag:'🇵🇾',region:'Americas',events:[]},
+  {code:'CR',name:'Costa Rica',flag:'🇨🇷',region:'Americas',events:[]},
+  {code:'PA',name:'Panama',flag:'🇵🇦',region:'Americas',events:[]},
+  {code:'DO',name:'Dominican Republic',flag:'🇩🇴',region:'Americas',events:[]},
+  {code:'CU',name:'Cuba',flag:'🇨🇺',region:'Americas',events:[]},
+  {code:'JM',name:'Jamaica',flag:'🇯🇲',region:'Americas',events:[]},
+  {code:'PR',name:'Puerto Rico',flag:'🇵🇷',region:'Americas',events:[]},
+  {code:'GB',name:'United Kingdom',flag:'🇬🇧',region:'Europe',events:[]},
+  {code:'IE',name:'Ireland',flag:'🇮🇪',region:'Europe',events:[]},
+  {code:'FR',name:'France',flag:'🇫🇷',region:'Europe',events:[]},
+  {code:'DE',name:'Germany',flag:'🇩🇪',region:'Europe',events:[]},
+  {code:'IT',name:'Italy',flag:'🇮🇹',region:'Europe',events:[]},
+  {code:'ES',name:'Spain',flag:'🇪🇸',region:'Europe',events:[]},
+  {code:'PT',name:'Portugal',flag:'🇵🇹',region:'Europe',events:[]},
+  {code:'NL',name:'Netherlands',flag:'🇳🇱',region:'Europe',events:[]},
+  {code:'BE',name:'Belgium',flag:'🇧🇪',region:'Europe',events:[]},
+  {code:'CH',name:'Switzerland',flag:'🇨🇭',region:'Europe',events:[]},
+  {code:'AT',name:'Austria',flag:'🇦🇹',region:'Europe',events:[]},
+  {code:'SE',name:'Sweden',flag:'🇸🇪',region:'Europe',events:[]},
+  {code:'NO',name:'Norway',flag:'🇳🇴',region:'Europe',events:[]},
+  {code:'DK',name:'Denmark',flag:'🇩🇰',region:'Europe',events:[]},
+  {code:'FI',name:'Finland',flag:'🇫🇮',region:'Europe',events:[]},
+  {code:'IS',name:'Iceland',flag:'🇮🇸',region:'Europe',events:[]},
+  {code:'PL',name:'Poland',flag:'🇵🇱',region:'Europe',events:[]},
+  {code:'CZ',name:'Czechia',flag:'🇨🇿',region:'Europe',events:[]},
+  {code:'SK',name:'Slovakia',flag:'🇸🇰',region:'Europe',events:[]},
+  {code:'HU',name:'Hungary',flag:'🇭🇺',region:'Europe',events:[]},
+  {code:'RO',name:'Romania',flag:'🇷🇴',region:'Europe',events:[]},
+  {code:'BG',name:'Bulgaria',flag:'🇧🇬',region:'Europe',events:[]},
+  {code:'GR',name:'Greece',flag:'🇬🇷',region:'Europe',events:[]},
+  {code:'HR',name:'Croatia',flag:'🇭🇷',region:'Europe',events:[]},
+  {code:'RS',name:'Serbia',flag:'🇷🇸',region:'Europe',events:[]},
+  {code:'SI',name:'Slovenia',flag:'🇸🇮',region:'Europe',events:[]},
+  {code:'EE',name:'Estonia',flag:'🇪🇪',region:'Europe',events:[]},
+  {code:'LV',name:'Latvia',flag:'🇱🇻',region:'Europe',events:[]},
+  {code:'LT',name:'Lithuania',flag:'🇱🇹',region:'Europe',events:[]},
+  {code:'UA',name:'Ukraine',flag:'🇺🇦',region:'Europe',events:[]},
+  {code:'RU',name:'Russia',flag:'🇷🇺',region:'Europe',events:[]},
+  {code:'BY',name:'Belarus',flag:'🇧🇾',region:'Europe',events:[]},
+  {code:'MD',name:'Moldova',flag:'🇲🇩',region:'Europe',events:[]},
+  {code:'LU',name:'Luxembourg',flag:'🇱🇺',region:'Europe',events:[]},
+  {code:'MT',name:'Malta',flag:'🇲🇹',region:'Europe',events:[]},
+  {code:'CY',name:'Cyprus',flag:'🇨🇾',region:'Europe',events:[]},
+  {code:'CN',name:'China',flag:'🇨🇳',region:'Asia',events:[]},
+  {code:'JP',name:'Japan',flag:'🇯🇵',region:'Asia',events:[]},
+  {code:'KR',name:'South Korea',flag:'🇰🇷',region:'Asia',events:[]},
+  {code:'KP',name:'North Korea',flag:'🇰🇵',region:'Asia',events:[]},
+  {code:'IN',name:'India',flag:'🇮🇳',region:'Asia',events:[]},
+  {code:'PK',name:'Pakistan',flag:'🇵🇰',region:'Asia',events:[]},
+  {code:'BD',name:'Bangladesh',flag:'🇧🇩',region:'Asia',events:[]},
+  {code:'LK',name:'Sri Lanka',flag:'🇱🇰',region:'Asia',events:[]},
+  {code:'NP',name:'Nepal',flag:'🇳🇵',region:'Asia',events:[]},
+  {code:'MV',name:'Maldives',flag:'🇲🇻',region:'Asia',events:[]},
+  {code:'AF',name:'Afghanistan',flag:'🇦🇫',region:'Asia',events:[]},
+  {code:'ID',name:'Indonesia',flag:'🇮🇩',region:'Asia',events:[]},
+  {code:'MY',name:'Malaysia',flag:'🇲🇾',region:'Asia',events:[]},
+  {code:'SG',name:'Singapore',flag:'🇸🇬',region:'Asia',events:[]},
+  {code:'TH',name:'Thailand',flag:'🇹🇭',region:'Asia',events:[]},
+  {code:'VN',name:'Vietnam',flag:'🇻🇳',region:'Asia',events:[]},
+  {code:'PH',name:'Philippines',flag:'🇵🇭',region:'Asia',events:[]},
+  {code:'TW',name:'Taiwan',flag:'🇹🇼',region:'Asia',events:[]},
+  {code:'HK',name:'Hong Kong',flag:'🇭🇰',region:'Asia',events:[]},
+  {code:'MO',name:'Macau',flag:'🇲🇴',region:'Asia',events:[]},
+  {code:'MN',name:'Mongolia',flag:'🇲🇳',region:'Asia',events:[]},
+  {code:'KZ',name:'Kazakhstan',flag:'🇰🇿',region:'Asia',events:[]},
+  {code:'UZ',name:'Uzbekistan',flag:'🇺🇿',region:'Asia',events:[]},
+  {code:'TM',name:'Turkmenistan',flag:'🇹🇲',region:'Asia',events:[]},
+  {code:'KG',name:'Kyrgyzstan',flag:'🇰🇬',region:'Asia',events:[]},
+  {code:'TJ',name:'Tajikistan',flag:'🇹🇯',region:'Asia',events:[]},
+  {code:'AZ',name:'Azerbaijan',flag:'🇦🇿',region:'Asia',events:[]},
+  {code:'GE',name:'Georgia',flag:'🇬🇪',region:'Asia',events:[]},
+  {code:'AM',name:'Armenia',flag:'🇦🇲',region:'Asia',events:[]},
+  {code:'MM',name:'Myanmar',flag:'🇲🇲',region:'Asia',events:[]},
+  {code:'KH',name:'Cambodia',flag:'🇰🇭',region:'Asia',events:[]},
+  {code:'LA',name:'Laos',flag:'🇱🇦',region:'Asia',events:[]},
+  {code:'BN',name:'Brunei',flag:'🇧🇳',region:'Asia',events:[]},
+  {code:'AU',name:'Australia',flag:'🇦🇺',region:'Oceania',events:[]},
+  {code:'NZ',name:'New Zealand',flag:'🇳🇿',region:'Oceania',events:[]},
+  {code:'FJ',name:'Fiji',flag:'🇫🇯',region:'Oceania',events:[]},
+  {code:'PG',name:'Papua New Guinea',flag:'🇵🇬',region:'Oceania',events:[]},
+  {code:'NG',name:'Nigeria',flag:'🇳🇬',region:'Africa',events:[]},
+  {code:'ZA',name:'South Africa',flag:'🇿🇦',region:'Africa',events:[]},
+  {code:'KE',name:'Kenya',flag:'🇰🇪',region:'Africa',events:[]},
+  {code:'ET',name:'Ethiopia',flag:'🇪🇹',region:'Africa',events:[]},
+  {code:'GH',name:'Ghana',flag:'🇬🇭',region:'Africa',events:[]},
+  {code:'MA',name:'Morocco',flag:'🇲🇦',region:'Africa',events:[]},
+  {code:'DZ',name:'Algeria',flag:'🇩🇿',region:'Africa',events:[]},
+  {code:'TN',name:'Tunisia',flag:'🇹🇳',region:'Africa',events:[]},
+  {code:'LY',name:'Libya',flag:'🇱🇾',region:'Africa',events:[]},
+  {code:'SD',name:'Sudan',flag:'🇸🇩',region:'Africa',events:[]},
+  {code:'SO',name:'Somalia',flag:'🇸🇴',region:'Africa',events:[]},
+  {code:'UG',name:'Uganda',flag:'🇺🇬',region:'Africa',events:[]},
+  {code:'TZ',name:'Tanzania',flag:'🇹🇿',region:'Africa',events:[]},
+  {code:'RW',name:'Rwanda',flag:'🇷🇼',region:'Africa',events:[]},
+  {code:'SN',name:'Senegal',flag:'🇸🇳',region:'Africa',events:[]},
+  {code:'CI',name:'Ivory Coast',flag:'🇨🇮',region:'Africa',events:[]},
+  {code:'CM',name:'Cameroon',flag:'🇨🇲',region:'Africa',events:[]},
+  {code:'AO',name:'Angola',flag:'🇦🇴',region:'Africa',events:[]},
+  {code:'MZ',name:'Mozambique',flag:'🇲🇿',region:'Africa',events:[]},
+  {code:'ZW',name:'Zimbabwe',flag:'🇿🇼',region:'Africa',events:[]},
+  {code:'ZM',name:'Zambia',flag:'🇿🇲',region:'Africa',events:[]},
 ];
+
+// Major worldwide observances and global marketing dates.
+// Rebuilt automatically each year — see buildWorldEvents() below.
+// Pattern: { name, month (1-12), day (1-31), type, isMarketing? }
+const WORLD_EVENT_TEMPLATES = [
+  // ── Universal & UN observances ──
+  { name: "New Year's Day", month: 1, day: 1, type: 'national' },
+  { name: 'World Braille Day', month: 1, day: 4, type: 'seasonal' },
+  { name: 'International Women\'s Day', month: 3, day: 8, type: 'seasonal' },
+  { name: 'World Water Day', month: 3, day: 22, type: 'seasonal' },
+  { name: 'World Health Day', month: 4, day: 7, type: 'seasonal' },
+  { name: 'Earth Day', month: 4, day: 22, type: 'seasonal' },
+  { name: 'World Book Day', month: 4, day: 23, type: 'seasonal' },
+  { name: 'International Workers\' Day', month: 5, day: 1, type: 'national' },
+  { name: 'World Press Freedom Day', month: 5, day: 3, type: 'seasonal' },
+  { name: 'World Environment Day', month: 6, day: 5, type: 'seasonal' },
+  { name: 'World Refugee Day', month: 6, day: 20, type: 'seasonal' },
+  { name: 'International Day of Peace', month: 9, day: 21, type: 'seasonal' },
+  { name: 'World Tourism Day', month: 9, day: 27, type: 'seasonal' },
+  { name: 'World Teachers\' Day', month: 10, day: 5, type: 'seasonal' },
+  { name: 'World Mental Health Day', month: 10, day: 10, type: 'seasonal' },
+  { name: 'World Food Day', month: 10, day: 16, type: 'seasonal' },
+  { name: 'United Nations Day', month: 10, day: 24, type: 'seasonal' },
+  { name: 'World Diabetes Day', month: 11, day: 14, type: 'seasonal' },
+  { name: 'World Children\'s Day', month: 11, day: 20, type: 'seasonal' },
+  { name: 'World AIDS Day', month: 12, day: 1, type: 'seasonal' },
+  { name: 'Human Rights Day', month: 12, day: 10, type: 'seasonal' },
+  // ── Global marketing & shopping ──
+  { name: "Valentine's Day", month: 2, day: 14, type: 'seasonal', isMarketing: true },
+  { name: "Mother's Day (US)", month: 5, day: 10, type: 'seasonal', isMarketing: true }, // 2nd Sun May — approx
+  { name: "Father's Day (US)", month: 6, day: 21, type: 'seasonal', isMarketing: true }, // 3rd Sun Jun — approx
+  { name: 'Halloween', month: 10, day: 31, type: 'seasonal', isMarketing: true },
+  { name: 'Singles\' Day (11.11)', month: 11, day: 11, type: 'seasonal', isMarketing: true },
+  { name: 'Black Friday', month: 11, day: 28, type: 'seasonal', isMarketing: true }, // 4th Fri Nov — approx
+  { name: 'Cyber Monday', month: 12, day: 1, type: 'seasonal', isMarketing: true },
+  { name: 'Christmas Day', month: 12, day: 25, type: 'religious', isMarketing: true },
+  { name: 'Boxing Day', month: 12, day: 26, type: 'seasonal', isMarketing: true },
+  { name: "New Year's Eve", month: 12, day: 31, type: 'seasonal', isMarketing: true },
+];
+
+// Build a fresh list of world events for the current and next year.
+function buildWorldEvents() {
+  var thisYear = new Date().getFullYear();
+  var out = [];
+  [thisYear, thisYear + 1].forEach(function(y) {
+    WORLD_EVENT_TEMPLATES.forEach(function(tpl) {
+      var mm = String(tpl.month).padStart(2, '0');
+      var dd = String(tpl.day).padStart(2, '0');
+      var date = y + '-' + mm + '-' + dd;
+      var color = 'var(--blue)', bg = 'var(--blue-l)';
+      if (tpl.type === 'national') { color = 'var(--gold)'; bg = 'var(--gold-l)'; }
+      else if (tpl.type === 'religious') { color = 'var(--green)'; bg = 'var(--green-l)'; }
+      out.push({
+        name: tpl.name,
+        date: date,
+        label: fmtDateShort(new Date(date + 'T12:00:00')),
+        type: tpl.type,
+        color: color,
+        bg: bg,
+        isCustom: false
+      });
+    });
+  });
+  return out;
+}
 
 
 // ══════════════════════════════════════
@@ -1264,6 +1381,13 @@ var STRINGS = {
     endedBadge: 'Ended',
     daysAgo: 'days ago',
     cantBePast: 'Date can\'t be in the past',
+    refreshEvents: 'Refresh Events',
+    refreshing: 'Refreshing…',
+    refreshed: 'Refreshed',
+    justNow: 'just now',
+    minAgo: 'min ago',
+    hrAgo: 'h ago',
+    dayAgo: 'd ago',
     monthsShort: ['Jan','Feb','Mar','Apr','May','Jun','Jul','Aug','Sep','Oct','Nov','Dec'],
   },
   ar: {
@@ -1396,6 +1520,13 @@ var STRINGS = {
     endedBadge: 'انتهى',
     daysAgo: 'يوم مضى',
     cantBePast: 'لا يمكن اختيار تاريخ في الماضي',
+    refreshEvents: 'تحديث الأحداث',
+    refreshing: 'جاري التحديث…',
+    refreshed: 'تم التحديث',
+    justNow: 'الآن',
+    minAgo: 'د مضت',
+    hrAgo: 'س مضت',
+    dayAgo: 'يوم',
     monthsShort: ['ينا','فبر','مار','أبر','ماي','يون','يول','أغس','سبت','أكت','نوف','ديس'],
   }
 };
@@ -1440,6 +1571,7 @@ function applyAllTranslations() {
     'txt-addNote': 'addNote',
     'txt-freePlan': 'freePlan',
     'txt-changeCountry': 'changeCountry',
+    'txt-refreshEvents': 'refreshEvents',
     'txt-language': 'language',
     'txt-signOut': 'signOut',
     'txt-newNote': 'newNote',
@@ -1578,13 +1710,58 @@ async function fetchCountryEvents(countryCode, year) {
   }
 }
 
+// 7 days in milliseconds
+var EVENTS_CACHE_MAX_AGE = 7 * 24 * 60 * 60 * 1000;
+
+// Read cached events for a country code. Returns array or null.
+function readEventsCache(countryCode) {
+  try {
+    var raw = localStorage.getItem('mp_events_' + countryCode);
+    if (!raw) return null;
+    var parsed = JSON.parse(raw);
+    if (!parsed || !parsed.savedAt || !Array.isArray(parsed.events)) return null;
+    if (Date.now() - parsed.savedAt > EVENTS_CACHE_MAX_AGE) return null; // expired
+    return parsed.events;
+  } catch(e) { return null; }
+}
+
+function writeEventsCache(countryCode, events) {
+  try {
+    localStorage.setItem('mp_events_' + countryCode, JSON.stringify({
+      savedAt: Date.now(),
+      events: events
+    }));
+  } catch(e) { /* quota full or disabled */ }
+}
+
 async function loadEventsForCountry(countryCode) {
+  var c = COUNTRIES.find(function(x) { return x.code === countryCode; });
+  if (!c) return;
+  
+  // Special case: World — use the built-in WORLD_EVENT_TEMPLATES
+  if (countryCode === 'WORLD') {
+    c.events = buildWorldEvents();
+    renderTimeline();
+    renderUpcoming();
+    updateHero();
+    if (document.getElementById('s-calendar').classList.contains('active')) renderCalendar();
+    return;
+  }
+  
+  // Try cache first — saves API calls and works offline
+  var cached = readEventsCache(countryCode);
+  if (cached && cached.length) {
+    c.events = cached;
+    renderTimeline();
+    renderUpcoming();
+    updateHero();
+    if (document.getElementById('s-calendar').classList.contains('active')) renderCalendar();
+    return;
+  }
+  
+  // Cache miss or expired — fetch from Calendarific
   var year = new Date().getFullYear();
-  
-  // Get current year events
   var events = await fetchCountryEvents(countryCode, year);
-  
-  // Also get next year events and combine
   var nextEvents = await fetchCountryEvents(countryCode, year + 1);
   
   var allEvents = [];
@@ -1601,15 +1778,44 @@ async function loadEventsForCountry(countryCode) {
   }).sort(function(a,b) { return a.days - b.days; });
   
   if (allEvents.length > 0) {
-    var c = COUNTRIES.find(function(x) { return x.code === countryCode; });
-    if (c) {
-      c.events = allEvents;
-      renderTimeline();
-      renderUpcoming();
-      updateHero();
-      if (document.getElementById('s-calendar').classList.contains('active')) renderCalendar();
-    }
+    c.events = allEvents;
+    writeEventsCache(countryCode, allEvents);
+    renderTimeline();
+    renderUpcoming();
+    updateHero();
+    if (document.getElementById('s-calendar').classList.contains('active')) renderCalendar();
   }
+}
+
+// Force a refresh ignoring the cache — useful for manual refresh
+async function refreshEventsForCountry(countryCode) {
+  try { localStorage.removeItem('mp_events_' + countryCode); } catch(e) {}
+  return loadEventsForCountry(countryCode);
+}
+
+// User-triggered refresh from Account → Refresh Events
+async function handleRefreshEvents() {
+  if (!country || !country.code) return;
+  toast(t('refreshing') || 'Refreshing…');
+  await refreshEventsForCountry(country.code);
+  updateLastRefreshLabel();
+  toast('✓ ' + (t('refreshed') || 'Refreshed'));
+}
+
+function updateLastRefreshLabel() {
+  var lbl = document.getElementById('lastRefreshLabel');
+  if (!lbl || !country || !country.code) return;
+  try {
+    var raw = localStorage.getItem('mp_events_' + country.code);
+    if (!raw) { lbl.textContent = ''; return; }
+    var parsed = JSON.parse(raw);
+    if (!parsed || !parsed.savedAt) { lbl.textContent = ''; return; }
+    var ageMin = Math.floor((Date.now() - parsed.savedAt) / 60000);
+    if (ageMin < 1) lbl.textContent = (t('justNow') || 'just now');
+    else if (ageMin < 60) lbl.textContent = ageMin + ' ' + (t('minAgo') || 'min ago');
+    else if (ageMin < 1440) lbl.textContent = Math.floor(ageMin/60) + ' ' + (t('hrAgo') || 'h ago');
+    else lbl.textContent = Math.floor(ageMin/1440) + ' ' + (t('dayAgo') || 'd ago');
+  } catch(e) { lbl.textContent = ''; }
 }
 
 
@@ -2231,7 +2437,7 @@ function translateEventName(name) {
 
 // ── STATE ──
 var lang = (typeof _savedLang !== 'undefined') ? _savedLang : (localStorage.getItem('mp_lang') || 'en');
-var country = COUNTRIES[0];
+var country = COUNTRIES.find(function(c){ return c.code === 'SA'; }) || COUNTRIES[0];
 var customEvs = [];
 var eventNotes = {};
 var currentEvent = null;
@@ -2294,7 +2500,7 @@ function go(id) {
   var el = document.getElementById(id);
   if (el) { el.classList.add('active'); el.scrollTop = 0; }
   if (id === 's-calendar') renderCalendar();
-  if (id === 's-profile') { try { refreshNotifToggle(); } catch(e) {} }
+  if (id === 's-profile') { try { refreshNotifToggle(); updateLastRefreshLabel(); } catch(e) {} }
   if (id === 's-notif') { try { renderNotifList(); } catch(e) {} }
 }
 
@@ -2382,7 +2588,14 @@ function renderCountryList(f) {
     if (!regions[c.region]) regions[c.region] = [];
     regions[c.region].push(c);
   });
+  // Custom region ordering — Worldwide first, then by intuitive geographic order
+  var regionOrder = ['Worldwide', 'Middle East', 'Africa', 'Europe', 'Asia', 'Americas', 'Oceania'];
+  var orderedRegions = regionOrder.filter(function(r) { return regions[r]; });
+  // Append any region not in our predefined list (defensive)
   Object.keys(regions).forEach(function(r) {
+    if (orderedRegions.indexOf(r) === -1) orderedRegions.push(r);
+  });
+  orderedRegions.forEach(function(r) {
     var hdr = document.createElement('div');
     hdr.style.cssText = 'font-size:11px;font-weight:600;color:var(--t3);letter-spacing:.8px;text-transform:uppercase;padding:14px 0 8px';
     hdr.textContent = r;
@@ -2392,9 +2605,11 @@ function renderCountryList(f) {
     regions[r].forEach(function(c) {
       var div = document.createElement('div');
       div.style.cssText = 'background:' + (c.code===country.code?'var(--green-l)':'var(--card)') + ';border:1.5px solid ' + (c.code===country.code?'var(--green)':'var(--border)') + ';border-radius:16px;padding:14px 16px;display:flex;align-items:center;gap:12px;cursor:pointer';
+      // For empty event lists (not yet loaded), just show flag+name
+      var evCount = c.events && c.events.length ? c.events.length + ' events' : (c.code === 'WORLD' ? 'Global observances' : 'Tap to load');
       div.innerHTML = '<span style="font-size:22px">' + c.flag + '</span>'
         + '<div style="flex:1"><div style="font-size:15px;font-weight:500;color:var(--t1)">' + c.name + '</div>'
-        + '<div style="font-size:12px;color:var(--t2);margin-top:1px">' + c.events.length + ' events</div></div>'
+        + '<div style="font-size:12px;color:var(--t2);margin-top:1px">' + evCount + '</div></div>'
         + (c.code===country.code ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>' : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--t3)" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>');
       div.addEventListener('click', function() { selectCountry(c.code); });
       grp.appendChild(div);
