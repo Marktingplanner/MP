@@ -76,7 +76,7 @@ html,body{width:100%;height:100%;overflow:hidden;background:#E8E5DF;font-family:
 
 /* NAV */
 .nav{display:flex;flex-shrink:0;background:var(--card);border-top:1px solid var(--border);padding-bottom:env(safe-area-inset-bottom)}
-.ni{flex:1;display:flex;flex-direction:column;align-items:center;gap:4px;padding:12px 4px;cursor:pointer}
+.ni{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;padding:8px 4px;cursor:pointer}
 .ni svg{width:22px;height:22px;stroke:var(--t3);fill:none;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round;transition:stroke .2s}
 .ni span{font-size:10px;font-weight:500;color:var(--t3);transition:color .2s;letter-spacing:.2px}
 .ni.active svg{stroke:var(--green)}.ni.active span{color:var(--green)}
@@ -574,7 +574,7 @@ sb.auth.onAuthStateChange(function(event, session) {
     <div id="txt-comingUp" style="font-size:13px;font-weight:600;color:var(--t2);letter-spacing:.3px">Coming Up</div>
     <span id="txt-viewAll" onclick="navTo(1)" style="font-size:12px;font-weight:600;color:var(--green);cursor:pointer">View all</span>
   </div>
-  <div style="padding:0 24px;padding-bottom:110px;display:flex;flex-direction:column;gap:10px" id="upcomingList"></div>
+  <div style="padding:0 24px;padding-bottom:24px;display:flex;flex-direction:column;gap:10px" id="upcomingList"></div>
 </div>
 
 <!-- ══ CALENDAR ══ -->
@@ -594,7 +594,7 @@ sb.auth.onAuthStateChange(function(event, session) {
     <button onclick="setCalFilter('seasonal',this)" class="cal-f" id="txt-filterSeasonal" style="padding:8px 18px;border-radius:50px;border:1.5px solid var(--border);background:transparent;color:var(--t2);font-family:DM Sans,sans-serif;font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap">Seasonal</button>
     <button onclick="setCalFilter('custom',this)" class="cal-f" id="txt-filterCustom" style="padding:8px 18px;border-radius:50px;border:1.5px solid rgba(184,134,11,.3);background:transparent;color:var(--gold);font-family:DM Sans,sans-serif;font-size:13px;font-weight:500;cursor:pointer;white-space:nowrap">Custom</button>
   </div>
-  <div style="padding:0 24px;padding-bottom:110px;flex:1;overflow-y:auto" id="calList"></div>
+  <div style="padding:0 24px;padding-bottom:24px;flex:1;overflow-y:auto" id="calList"></div>
 </div>
 
 <!-- ══ EVENT DETAIL ══ -->
@@ -603,7 +603,7 @@ sb.auth.onAuthStateChange(function(event, session) {
     <div class="bk" onclick="go('s-home')"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></div>
     <div id="detailTitle" style="font-size:17px;font-weight:600;color:var(--t1)">Event</div>
   </div>
-  <div style="padding:0 24px;padding-bottom:110px;overflow-y:auto;flex:1">
+  <div style="padding:0 24px;padding-bottom:24px;overflow-y:auto;flex:1">
     <!-- Hero -->
     <div id="detailHeroCard" style="background:var(--green);border-radius:24px;padding:24px;margin-bottom:16px;text-align:center;position:relative;overflow:hidden">
       <div style="position:absolute;top:-20px;right:-20px;width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.07)"></div>
@@ -641,7 +641,7 @@ sb.auth.onAuthStateChange(function(event, session) {
   <div style="padding:20px 24px 16px;flex-shrink:0">
     <div id="txt-account" style="font-family:'DM Serif Display',serif;font-size:24px;color:var(--t1)">Account</div>
   </div>
-  <div style="padding:0 24px;padding-bottom:110px;overflow-y:auto;flex:1">
+  <div style="padding:0 24px;padding-bottom:24px;overflow-y:auto;flex:1">
     <!-- Avatar -->
     <div style="background:var(--green);border-radius:24px;padding:24px;margin-bottom:16px;display:flex;align-items:center;gap:16px">
       <div id="profileAvatar" style="width:64px;height:64px;border-radius:20px;background:rgba(255,255,255,.2);display:flex;align-items:center;justify-content:center;flex-shrink:0">
@@ -740,7 +740,7 @@ sb.auth.onAuthStateChange(function(event, session) {
     <div class="bk" onclick="go('s-home')"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></div>
     <div style="font-family:'DM Serif Display',serif;font-size:20px;color:var(--t1)" id="txt-notifHeader">Notifications</div>
   </div>
-  <div style="padding:0 24px;padding-bottom:110px" id="notifListContainer">
+  <div style="padding:0 24px;padding-bottom:24px" id="notifListContainer">
     <!-- populated by renderNotifList() -->
   </div>
 </div>
