@@ -235,6 +235,7 @@ async function loadUserData() {
     userData.email = profile.email || '';
     userData.phone = profile.phone || '';
     userData.biz = profile.business_name || '';
+    userData.bizType = profile.business_type || '';
     var nameEl = document.getElementById('userName'); if (nameEl) nameEl.textContent = userData.name || 'User';
     var pNameEl = document.getElementById('profileName'); if (pNameEl) pNameEl.textContent = userData.name || 'User';
     var pEmailEl = document.getElementById('profileEmail'); if (pEmailEl) pEmailEl.textContent = userData.email || '—';
@@ -519,51 +520,86 @@ sb.auth.onAuthStateChange(function(event, session) {
 
     <!-- STEP 2 -->
     <div id="ob-2" style="display:none;flex-direction:column;flex:1">
-      <div style="font-family:'DM Serif Display',serif;font-size:28px;color:var(--t1);margin-bottom:8px">Your business</div>
-      <div style="font-size:14px;color:var(--t2);margin-bottom:28px">We'll pick the best events for you</div>
+      <div style="font-family:'DM Serif Display',serif;font-size:28px;color:var(--t1);margin-bottom:8px" id="txt-obBizTitle">Your business</div>
+      <div style="font-size:14px;color:var(--t2);margin-bottom:28px" id="txt-obBizSub">We'll customize content ideas just for you</div>
       <div>
-        <div class="lbl" style="margin-bottom:8px">Business Name</div>
+        <div class="lbl" style="margin-bottom:8px" id="txt-obBizName">Business Name</div>
         <input class="inp" id="ob-biz" placeholder="e.g. Central Cafe" style="margin-bottom:20px">
       </div>
-      <div class="lbl" style="margin-bottom:10px">Business Type</div>
-      <div style="display:flex;flex-direction:column;gap:8px;flex:1;overflow-y:auto">
-        <div class="ob-opt" onclick="selOb(this,'cafe')">
-          <div style="width:36px;height:36px;border-radius:10px;background:var(--green-l);display:flex;align-items:center;justify-content:center;flex-shrink:0">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="1.7" stroke-linecap="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/></svg>
+      <div class="lbl" style="margin-bottom:10px" id="txt-obBizType">Business Type</div>
+      <div style="display:flex;flex-direction:column;gap:8px;flex:1;overflow-y:auto;padding-bottom:4px">
+        <div class="ob-opt" onclick="selOb(this,'food')">
+          <div style="width:38px;height:38px;border-radius:11px;background:#FFF3E0;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#E65100" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8h1a4 4 0 0 1 0 8h-1"/><path d="M2 8h16v9a4 4 0 0 1-4 4H6a4 4 0 0 1-4-4V8z"/><line x1="6" y1="2" x2="6" y2="4"/><line x1="10" y1="2" x2="10" y2="4"/><line x1="14" y1="2" x2="14" y2="4"/></svg>
           </div>
-          <div style="font-size:14px;font-weight:500;color:var(--t1);flex:1">Coffee & Beverages</div>
+          <div style="flex:1">
+            <div style="font-size:14px;font-weight:600;color:var(--t1)" id="txt-bizFood">Restaurants & Cafés</div>
+            <div style="font-size:11px;color:var(--t3);margin-top:2px" id="txt-bizFoodDesc">Coffee shops, restaurants, food trucks</div>
+          </div>
           <div style="width:20px;height:20px;border-radius:50%;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center" class="ob-chk"></div>
         </div>
-        <div class="ob-opt" onclick="selOb(this,'restaurant')">
-          <div style="width:36px;height:36px;border-radius:10px;background:var(--green-l);display:flex;align-items:center;justify-content:center;flex-shrink:0">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="1.7" stroke-linecap="round"><path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3zm0 0v7"/></svg>
+        <div class="ob-opt" onclick="selOb(this,'ecommerce')">
+          <div style="width:38px;height:38px;border-radius:11px;background:#E3F2FD;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#1565C0" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
           </div>
-          <div style="font-size:14px;font-weight:500;color:var(--t1);flex:1">Restaurant & Food</div>
-          <div style="width:20px;height:20px;border-radius:50%;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center" class="ob-chk"></div>
-        </div>
-        <div class="ob-opt" onclick="selOb(this,'retail')">
-          <div style="width:36px;height:36px;border-radius:10px;background:var(--green-l);display:flex;align-items:center;justify-content:center;flex-shrink:0">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="1.7" stroke-linecap="round"><path d="M6 2L3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V6l-3-4z"/><line x1="3" y1="6" x2="21" y2="6"/><path d="M16 10a4 4 0 0 1-8 0"/></svg>
+          <div style="flex:1">
+            <div style="font-size:14px;font-weight:600;color:var(--t1)" id="txt-bizEcom">E-commerce & Retail</div>
+            <div style="font-size:11px;color:var(--t3);margin-top:2px" id="txt-bizEcomDesc">Clothing, perfume, accessories, online stores</div>
           </div>
-          <div style="font-size:14px;font-weight:500;color:var(--t1);flex:1">Retail & Shopping</div>
           <div style="width:20px;height:20px;border-radius:50%;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center" class="ob-chk"></div>
         </div>
         <div class="ob-opt" onclick="selOb(this,'beauty')">
-          <div style="width:36px;height:36px;border-radius:10px;background:var(--green-l);display:flex;align-items:center;justify-content:center;flex-shrink:0">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="1.7" stroke-linecap="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
+          <div style="width:38px;height:38px;border-radius:11px;background:#FCE4EC;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#C2185B" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/></svg>
           </div>
-          <div style="font-size:14px;font-weight:500;color:var(--t1);flex:1">Beauty & Wellness</div>
+          <div style="flex:1">
+            <div style="font-size:14px;font-weight:600;color:var(--t1)" id="txt-bizBeauty">Clinics & Beauty</div>
+            <div style="font-size:11px;color:var(--t3);margin-top:2px" id="txt-bizBeautyDesc">Medical, dental, aesthetic, spa, wellness</div>
+          </div>
+          <div style="width:20px;height:20px;border-radius:50%;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center" class="ob-chk"></div>
+        </div>
+        <div class="ob-opt" onclick="selOb(this,'professional')">
+          <div style="width:38px;height:38px;border-radius:11px;background:#E8F5E9;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#2E7D32" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+          </div>
+          <div style="flex:1">
+            <div style="font-size:14px;font-weight:600;color:var(--t1)" id="txt-bizPro">Professional Services</div>
+            <div style="font-size:11px;color:var(--t3);margin-top:2px" id="txt-bizProDesc">Accounting, consulting, legal, agencies</div>
+          </div>
+          <div style="width:20px;height:20px;border-radius:50%;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center" class="ob-chk"></div>
+        </div>
+        <div class="ob-opt" onclick="selOb(this,'realestate')">
+          <div style="width:38px;height:38px;border-radius:11px;background:#FFF8E1;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F57F17" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>
+          </div>
+          <div style="flex:1">
+            <div style="font-size:14px;font-weight:600;color:var(--t1)" id="txt-bizRE">Real Estate, Auto & Travel</div>
+            <div style="font-size:11px;color:var(--t3);margin-top:2px" id="txt-bizREDesc">Properties, dealerships, tourism, hotels</div>
+          </div>
+          <div style="width:20px;height:20px;border-radius:50%;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center" class="ob-chk"></div>
+        </div>
+        <div class="ob-opt" onclick="selOb(this,'education')">
+          <div style="width:38px;height:38px;border-radius:11px;background:#EDE7F6;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#4527A0" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg>
+          </div>
+          <div style="flex:1">
+            <div style="font-size:14px;font-weight:600;color:var(--t1)" id="txt-bizEdu">Education & Training</div>
+            <div style="font-size:11px;color:var(--t3);margin-top:2px" id="txt-bizEduDesc">Schools, courses, online learning, coaching</div>
+          </div>
           <div style="width:20px;height:20px;border-radius:50%;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center" class="ob-chk"></div>
         </div>
         <div class="ob-opt" onclick="selOb(this,'other')">
-          <div style="width:36px;height:36px;border-radius:10px;background:var(--green-l);display:flex;align-items:center;justify-content:center;flex-shrink:0">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="1.7" stroke-linecap="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+          <div style="width:38px;height:38px;border-radius:11px;background:var(--card2);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--t2)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="16"/><line x1="8" y1="12" x2="16" y2="12"/></svg>
           </div>
-          <div style="font-size:14px;font-weight:500;color:var(--t1);flex:1">Other Business</div>
+          <div style="flex:1">
+            <div style="font-size:14px;font-weight:600;color:var(--t1)" id="txt-bizOther">Other</div>
+            <div style="font-size:11px;color:var(--t3);margin-top:2px" id="txt-bizOtherDesc">Doesn't fit the above — we'll learn over time</div>
+          </div>
           <div style="width:20px;height:20px;border-radius:50%;border:1.5px solid var(--border);display:flex;align-items:center;justify-content:center" class="ob-chk"></div>
         </div>
       </div>
-      <button class="btn" style="margin-top:20px" onclick="obNext(3)">Continue</button>
+      <button class="btn" style="margin-top:20px" onclick="obNext(3)" id="txt-obContinue">Continue</button>
     </div>
 
     <!-- STEP 3 -->
@@ -762,6 +798,7 @@ sb.auth.onAuthStateChange(function(event, session) {
       <div style="flex:1;min-width:0">
         <div id="profileName" style="font-family:'DM Serif Display',serif;font-size:20px;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">—</div>
         <div id="profileBiz" style="font-size:13px;color:rgba(255,255,255,.75);margin-top:3px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">—</div>
+        <div id="profileBizType" style="font-size:11px;color:rgba(255,255,255,.6);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap"></div>
       </div>
     </div>
 
@@ -826,6 +863,16 @@ sb.auth.onAuthStateChange(function(event, session) {
     <!-- SECTION: ACCOUNT INFO -->
     <div class="acc-section-hdr" id="txt-accountHeader">ACCOUNT</div>
     <div style="background:var(--card);border:1.5px solid var(--border);border-radius:20px;overflow:hidden;margin-bottom:20px">
+      <div class="acc-row acc-row-tap" onclick="openBizTypeSheet()" style="padding:14px 16px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border);cursor:pointer">
+        <div class="acc-row-icon" id="bizTypeIcon" style="background:var(--card2)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--t2)" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/></svg>
+        </div>
+        <div style="flex:1;min-width:0">
+          <div style="font-size:14px;font-weight:500;color:var(--t1)" id="txt-bizTypeLbl">Business Type</div>
+          <div style="font-size:11px;color:var(--t3);margin-top:2px" id="bizTypeDisplay">Not set</div>
+        </div>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--t3)" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+      </div>
       <div style="padding:14px 16px;border-bottom:1px solid var(--border)">
         <div style="font-size:11px;color:var(--t3);margin-bottom:3px" id="txt-emailLbl">Email</div>
         <div id="profileEmail" style="font-size:14px;color:var(--t1);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">—</div>
@@ -980,6 +1027,20 @@ sb.auth.onAuthStateChange(function(event, session) {
 <div class="toast" id="toastEl"></div>
 
 <!-- SHEET: ADD EVENT -->
+<!-- ══ BUSINESS TYPE PICKER ══ -->
+<div class="overlay" id="bizTypeSheet" onclick="if(this===event.target)closeBizTypeSheet()">
+  <div class="sheet">
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:18px">
+      <div style="font-family:'DM Serif Display',serif;font-size:22px;color:var(--t1)" id="txt-bizTypeSheetTitle">Business Type</div>
+      <div onclick="closeBizTypeSheet()" style="width:32px;height:32px;border-radius:10px;background:var(--card2);display:flex;align-items:center;justify-content:center;cursor:pointer">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--t1)" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+      </div>
+    </div>
+    <div style="font-size:13px;color:var(--t2);margin-bottom:18px" id="txt-bizTypeSheetDesc">Content and ideas will be customized for your business</div>
+    <div id="bizTypeList" style="display:flex;flex-direction:column;gap:8px;max-height:60vh;overflow-y:auto;padding-bottom:8px"></div>
+  </div>
+</div>
+
 <div class="overlay" id="addSheet" onclick="if(this===event.target)closeAddSheet()">
   <div class="sheet">
     <div class="handle"></div>
@@ -1220,6 +1281,86 @@ const COUNTRIES=[
   {code:'ZM',name:'Zambia',flag:'🇿🇲',region:'Africa',events:[]},
 ];
 
+// Business type definitions — drives content personalization throughout the app.
+// Each entry has the icon color theme + a marketing-context description used by AI prompts.
+const BUSINESS_TYPES = [
+  {
+    code: 'food',
+    nameEn: 'Restaurants & Cafés',
+    nameAr: 'مطاعم وكافيهات',
+    descEn: 'Coffee shops, restaurants, food trucks',
+    descAr: 'كافيهات، مطاعم، عربات طعام',
+    color: '#E65100',
+    bg: '#FFF3E0',
+    aiContext: 'restaurant, cafe, food & beverage business'
+  },
+  {
+    code: 'ecommerce',
+    nameEn: 'E-commerce & Retail',
+    nameAr: 'متاجر إلكترونية وتجزئة',
+    descEn: 'Clothing, perfume, accessories, online stores',
+    descAr: 'ملابس، عطور، إكسسوارات، متاجر أونلاين',
+    color: '#1565C0',
+    bg: '#E3F2FD',
+    aiContext: 'online retail, e-commerce store (clothing/perfume/accessories)'
+  },
+  {
+    code: 'beauty',
+    nameEn: 'Clinics & Beauty',
+    nameAr: 'عيادات وتجميل',
+    descEn: 'Medical, dental, aesthetic, spa, wellness',
+    descAr: 'طبية، أسنان، تجميل، سبا، عافية',
+    color: '#C2185B',
+    bg: '#FCE4EC',
+    aiContext: 'clinic, medical practice, aesthetic/beauty/wellness center'
+  },
+  {
+    code: 'professional',
+    nameEn: 'Professional Services',
+    nameAr: 'خدمات مهنية',
+    descEn: 'Accounting, consulting, legal, agencies',
+    descAr: 'محاسبة، استشارات، قانونية، وكالات',
+    color: '#2E7D32',
+    bg: '#E8F5E9',
+    aiContext: 'B2B professional services firm (consulting/accounting/legal/agency)'
+  },
+  {
+    code: 'realestate',
+    nameEn: 'Real Estate, Auto & Travel',
+    nameAr: 'عقار وسيارات وسياحة',
+    descEn: 'Properties, dealerships, tourism, hotels',
+    descAr: 'عقارات، معارض سيارات، سياحة، فنادق',
+    color: '#F57F17',
+    bg: '#FFF8E1',
+    aiContext: 'real estate, auto dealership, travel & hospitality'
+  },
+  {
+    code: 'education',
+    nameEn: 'Education & Training',
+    nameAr: 'تعليم وتدريب',
+    descEn: 'Schools, courses, online learning, coaching',
+    descAr: 'مدارس، دورات، تعلم أونلاين، تدريب',
+    color: '#4527A0',
+    bg: '#EDE7F6',
+    aiContext: 'education provider, online courses, training/coaching business'
+  },
+  {
+    code: 'other',
+    nameEn: 'Other',
+    nameAr: 'أخرى',
+    descEn: 'Doesn\'t fit the above',
+    descAr: 'لا تنطبق الفئات أعلاه',
+    color: '#6B6560',
+    bg: '#F0EEE8',
+    aiContext: 'small business (general)'
+  }
+];
+
+// Helper to fetch a business type definition by code
+function getBizType(code) {
+  return BUSINESS_TYPES.find(function(b) { return b.code === code; }) || BUSINESS_TYPES[BUSINESS_TYPES.length - 1];
+}
+
 // Major worldwide observances and global marketing dates.
 // Rebuilt automatically each year — see buildWorldEvents() below.
 // Pattern: { name, month (1-12), day (1-31), type, isMarketing? }
@@ -1456,6 +1597,13 @@ var STRINGS = {
     typeOther: 'Other',
     emailLbl: 'Email',
     phoneLbl: 'Phone',
+    bizTypeLbl: 'Business Type',
+    bizTypeSheetDesc: 'Content and ideas will be customized for your business',
+    obBizTitle: 'Your business',
+    obBizSub: 'We\'ll customize content ideas just for you',
+    obBizName: 'Business Name',
+    obBizType: 'Business Type',
+    obContinue: 'Continue',
     // Confirm modal
     areYouSure: 'Are you sure?',
     confirm: 'Confirm',
@@ -1617,6 +1765,13 @@ var STRINGS = {
     typeOther: 'أخرى',
     emailLbl: 'البريد الإلكتروني',
     phoneLbl: 'رقم الجوال',
+    bizTypeLbl: 'نوع النشاط',
+    bizTypeSheetDesc: 'سيتم تخصيص المحتوى والأفكار لنشاطك',
+    obBizTitle: 'نشاطك',
+    obBizSub: 'سنخصص لك الأفكار والمحتوى',
+    obBizName: 'اسم النشاط',
+    obBizType: 'نوع النشاط',
+    obContinue: 'متابعة',
     // Confirm modal
     areYouSure: 'هل أنت متأكد؟',
     confirm: 'تأكيد',
@@ -1684,6 +1839,14 @@ function applyAllTranslations() {
     'txt-typeOther': 'typeOther',
     'txt-emailLbl': 'emailLbl',
     'txt-phoneLbl': 'phoneLbl',
+    'txt-bizTypeLbl': 'bizTypeLbl',
+    'txt-bizTypeSheetTitle': 'bizTypeLbl',
+    'txt-bizTypeSheetDesc': 'bizTypeSheetDesc',
+    'txt-obBizTitle': 'obBizTitle',
+    'txt-obBizSub': 'obBizSub',
+    'txt-obBizName': 'obBizName',
+    'txt-obBizType': 'obBizType',
+    'txt-obContinue': 'obContinue',
     'txt-language': 'language',
     'txt-signOut': 'signOut',
     'txt-newNote': 'newNote',
@@ -2621,6 +2784,7 @@ function go(id) {
     try {
       refreshNotifToggle();
       updateLastRefreshLabel();
+      updateBizTypeDisplay();
       var l = LANGS.find(function(x){ return x.code === lang; });
       var lbl = document.getElementById('currentLangLabel');
       if (lbl && l) lbl.textContent = l.native;
@@ -3006,8 +3170,22 @@ function obNext(step) {
 }
 
 function selOb(el, type) {
-  document.getElementById('ob-2').querySelectorAll('.ob-opt').forEach(function(o) { o.classList.remove('sel'); });
+  document.getElementById('ob-2').querySelectorAll('.ob-opt').forEach(function(o) {
+    o.classList.remove('sel');
+    var chk = o.querySelector('.ob-chk');
+    if (chk) {
+      chk.innerHTML = '';
+      chk.style.borderColor = 'var(--border)';
+      chk.style.background = 'transparent';
+    }
+  });
   el.classList.add('sel');
+  var chk = el.querySelector('.ob-chk');
+  if (chk) {
+    chk.style.borderColor = 'var(--green)';
+    chk.style.background = 'var(--green)';
+    chk.innerHTML = '<svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>';
+  }
   selBizType = type;
 }
 
@@ -3462,6 +3640,81 @@ function showAddSheet() {
   document.getElementById('addSheet').classList.add('show');
 }
 function closeAddSheet() { document.getElementById('addSheet').classList.remove('show'); }
+
+// ── BUSINESS TYPE PICKER ──
+function openBizTypeSheet() {
+  renderBizTypeList();
+  document.getElementById('bizTypeSheet').classList.add('show');
+}
+function closeBizTypeSheet() { document.getElementById('bizTypeSheet').classList.remove('show'); }
+
+function renderBizTypeList() {
+  var list = document.getElementById('bizTypeList');
+  if (!list) return;
+  var current = userData.bizType || '';
+  list.innerHTML = '';
+  BUSINESS_TYPES.forEach(function(b) {
+    var isSelected = b.code === current;
+    var name = lang === 'ar' ? b.nameAr : b.nameEn;
+    var desc = lang === 'ar' ? b.descAr : b.descEn;
+    var row = document.createElement('div');
+    row.style.cssText = 'background:' + (isSelected ? 'var(--green-l)' : 'var(--card)') + ';border:1.5px solid ' + (isSelected ? 'var(--green)' : 'var(--border)') + ';border-radius:16px;padding:14px;display:flex;align-items:center;gap:12px;cursor:pointer';
+    row.innerHTML =
+      '<div style="width:38px;height:38px;border-radius:11px;background:' + b.bg + ';display:flex;align-items:center;justify-content:center;flex-shrink:0">'
+        + '<div style="width:18px;height:18px;border-radius:5px;background:' + b.color + '"></div>'
+      + '</div>'
+      + '<div style="flex:1;min-width:0">'
+        + '<div style="font-size:14px;font-weight:600;color:var(--t1)">' + name + '</div>'
+        + '<div style="font-size:11px;color:var(--t3);margin-top:2px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + desc + '</div>'
+      + '</div>'
+      + (isSelected
+        ? '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg>'
+        : '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--t3)" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>');
+    row.addEventListener('click', function() { setBizType(b.code); });
+    list.appendChild(row);
+  });
+}
+
+async function setBizType(code) {
+  userData.bizType = code;
+  updateBizTypeDisplay();
+  closeBizTypeSheet();
+  // Persist
+  try {
+    var u = await sb.auth.getUser();
+    if (u.data && u.data.user) {
+      await sb.from('profiles').update({ business_type: code }).eq('id', u.data.user.id);
+    }
+  } catch(e) {}
+  try { localStorage.setItem('mp_user', JSON.stringify(userData)); } catch(e) {}
+  var b = getBizType(code);
+  toast('✓ ' + (lang === 'ar' ? b.nameAr : b.nameEn));
+}
+
+// Refresh all the spots that show the user's business type
+function updateBizTypeDisplay() {
+  var code = userData.bizType || '';
+  if (!code) {
+    var lblNone = document.getElementById('bizTypeDisplay');
+    if (lblNone) lblNone.textContent = lang === 'ar' ? 'لم يُحدد' : 'Not set';
+    var icoEl = document.getElementById('bizTypeIcon');
+    if (icoEl) icoEl.style.background = 'var(--card2)';
+    var pbt = document.getElementById('profileBizType');
+    if (pbt) pbt.textContent = '';
+    return;
+  }
+  var b = getBizType(code);
+  var displayName = lang === 'ar' ? b.nameAr : b.nameEn;
+  var lbl = document.getElementById('bizTypeDisplay');
+  if (lbl) lbl.textContent = displayName;
+  var ico = document.getElementById('bizTypeIcon');
+  if (ico) {
+    ico.style.background = b.bg;
+    ico.innerHTML = '<div style="width:14px;height:14px;border-radius:4px;background:' + b.color + '"></div>';
+  }
+  var pbtEl = document.getElementById('profileBizType');
+  if (pbtEl) pbtEl.textContent = displayName;
+}
 
 async function addCustomEvent() {
   document.activeElement.blur();
