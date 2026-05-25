@@ -732,6 +732,15 @@ sb.auth.onAuthStateChange(function(event, session) {
         </div>
       </div>
 
+      <!-- Market Pulse — today's top trends in the Saudi market -->
+      <div id="briefPulseBlock" style="margin-bottom:14px">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:8px">
+          <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--t2)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>
+          <div style="font-size:11px;font-weight:700;color:var(--t2);letter-spacing:.8px;text-transform:uppercase" id="txt-marketPulse">MARKET PULSE · SAUDI</div>
+        </div>
+        <div id="briefPulseList" style="display:flex;flex-direction:column;gap:6px"></div>
+      </div>
+
       <!-- Content ideas linked to upcoming event -->
       <div id="briefIdeasBlock" style="margin-bottom:14px">
         <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
@@ -812,6 +821,31 @@ sb.auth.onAuthStateChange(function(event, session) {
         <span id="txt-detailDaysLeft" style="font-size:13px;color:rgba(255,255,255,.8)">days left</span>
       </div>
     </div>
+    <!-- Trending Hashtags for this event -->
+    <div id="hashtagsCard" style="background:var(--card);border:1.5px solid var(--border);border-radius:20px;padding:20px;margin-bottom:14px">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px">
+        <div style="display:flex;align-items:center;gap:8px">
+          <div style="width:28px;height:28px;border-radius:9px;background:var(--blue-l);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="10" y1="3" x2="8" y2="21"/><line x1="16" y1="3" x2="14" y2="21"/></svg>
+          </div>
+          <div style="font-size:15px;font-weight:600;color:var(--t1)" id="txt-trendingTags">Trending Hashtags</div>
+        </div>
+        <button onclick="copyAllHashtags()" id="txt-copyAll" style="background:var(--blue-l);color:var(--blue);border:none;border-radius:50px;padding:6px 12px;font-family:DM Sans,sans-serif;font-size:12px;font-weight:600;cursor:pointer">Copy all</button>
+      </div>
+      <div id="hashtagsList" style="display:flex;flex-wrap:wrap;gap:6px"></div>
+    </div>
+
+    <!-- Inspiration Gallery — successful campaigns from the Saudi market -->
+    <div id="inspirationCard" style="background:var(--card);border:1.5px solid var(--border);border-radius:20px;padding:20px;margin-bottom:14px">
+      <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
+        <div style="width:28px;height:28px;border-radius:9px;background:#FCE4EC;display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#C2185B" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+        </div>
+        <div style="font-size:15px;font-weight:600;color:var(--t1)" id="txt-inspiration">Inspiration · Saudi Market</div>
+      </div>
+      <div id="inspirationList" style="display:flex;flex-direction:column;gap:10px"></div>
+    </div>
+
     <!-- Smart Reminders -->
     <div style="background:var(--card);border:1.5px solid var(--border);border-radius:20px;padding:20px;margin-bottom:14px">
       <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
@@ -933,6 +967,16 @@ sb.auth.onAuthStateChange(function(event, session) {
     <!-- SECTION: MORE -->
     <div class="acc-section-hdr" id="txt-moreHeader">MORE</div>
     <div style="background:var(--card);border:1.5px solid var(--border);border-radius:20px;overflow:hidden;margin-bottom:20px">
+      <div class="acc-row acc-row-tap" onclick="go('s-analyzer')" style="padding:14px 16px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border);cursor:pointer">
+        <div class="acc-row-icon" style="background:rgba(184,134,11,.15)">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        </div>
+        <div style="flex:1">
+          <div style="font-size:14px;color:var(--t1);font-weight:500" id="txt-aiAnalyzer">AI Content Analyzer</div>
+          <div style="font-size:11px;color:var(--t3);margin-top:2px" id="txt-aiAnalyzerDesc">Paste a post — get instant feedback</div>
+        </div>
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--t3)" stroke-width="2" stroke-linecap="round"><polyline points="9 18 15 12 9 6"/></svg>
+      </div>
       <div class="acc-row acc-row-tap" onclick="go('s-feedback')" style="padding:14px 16px;display:flex;align-items:center;gap:12px;border-bottom:1px solid var(--border);cursor:pointer">
         <div class="acc-row-icon" style="background:var(--card2)">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--t2)" stroke-width="1.7" stroke-linecap="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
@@ -981,6 +1025,74 @@ sb.auth.onAuthStateChange(function(event, session) {
       <textarea id="feedbackText" class="inp" style="height:140px;resize:none" placeholder="Write your feedback here..."></textarea>
     </div>
     <button onclick="submitFeedback()" class="btn" id="txt-sendFeedback">Send Feedback</button>
+  </div>
+</div>
+
+<!-- ══ AI CONTENT ANALYZER ══ -->
+<div class="screen" id="s-analyzer">
+  <div style="padding:14px 24px;display:flex;align-items:center;gap:12px;flex-shrink:0">
+    <div class="bk" onclick="go('s-profile')"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></div>
+    <div style="font-family:'DM Serif Display',serif;font-size:20px;color:var(--t1)" id="txt-analyzerTitle">AI Content Analyzer</div>
+  </div>
+  <div style="padding:0 24px;padding-bottom:24px;overflow-y:auto;flex:1">
+    <!-- Intro card -->
+    <div style="background:linear-gradient(135deg,#FFF8E1 0%,#FFF3E0 100%);border:1.5px solid rgba(184,134,11,.15);border-radius:20px;padding:18px;margin-bottom:18px;position:relative;overflow:hidden">
+      <div style="position:absolute;top:-30px;right:-30px;width:100px;height:100px;border-radius:50%;background:rgba(184,134,11,.06)"></div>
+      <div style="display:flex;align-items:flex-start;gap:10px;position:relative">
+        <div style="width:32px;height:32px;border-radius:10px;background:var(--gold);display:flex;align-items:center;justify-content:center;flex-shrink:0">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        </div>
+        <div style="flex:1">
+          <div style="font-size:14px;font-weight:600;color:var(--t1);margin-bottom:4px" id="txt-analyzerHowToTitle">How it works</div>
+          <div style="font-size:12px;color:var(--t2);line-height:1.5" id="txt-analyzerHowToDesc">Paste any marketing post or campaign. AI analyzes it and gives you ideas tailored to your business.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Input -->
+    <div style="margin-bottom:14px">
+      <div class="lbl" style="margin-bottom:8px" id="txt-analyzerInputLbl">Content to analyze</div>
+      <textarea id="analyzerInput" class="inp" style="height:140px;resize:none" placeholder="Paste a post, caption, or campaign text here..."></textarea>
+      <div style="font-size:11px;color:var(--t3);margin-top:6px" id="analyzerCharCount">0 / 2000</div>
+    </div>
+
+    <!-- Analyze button -->
+    <button onclick="runAnalyzer()" class="btn" id="analyzeBtn" style="margin-bottom:18px">
+      <span id="txt-analyzeBtn">Analyze with AI</span>
+    </button>
+
+    <!-- Result (hidden until analyzed) -->
+    <div id="analyzerResult" style="display:none">
+      <div style="background:var(--card);border:1.5px solid var(--border);border-radius:18px;padding:18px;margin-bottom:14px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+          <div style="width:24px;height:24px;border-radius:7px;background:var(--green-l);display:flex;align-items:center;justify-content:center">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--green)" stroke-width="2.2" stroke-linecap="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+          </div>
+          <div style="font-size:13px;font-weight:600;color:var(--t1)" id="txt-strengths">Strengths</div>
+        </div>
+        <div id="analyzerStrengths" style="font-size:13px;color:var(--t2);line-height:1.6"></div>
+      </div>
+
+      <div style="background:var(--card);border:1.5px solid var(--border);border-radius:18px;padding:18px;margin-bottom:14px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+          <div style="width:24px;height:24px;border-radius:7px;background:#FFF3E0;display:flex;align-items:center;justify-content:center">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#E65100" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+          </div>
+          <div style="font-size:13px;font-weight:600;color:var(--t1)" id="txt-weaknesses">Improvements</div>
+        </div>
+        <div id="analyzerWeaknesses" style="font-size:13px;color:var(--t2);line-height:1.6"></div>
+      </div>
+
+      <div style="background:var(--card);border:1.5px solid var(--border);border-radius:18px;padding:18px">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+          <div style="width:24px;height:24px;border-radius:7px;background:var(--gold-l);display:flex;align-items:center;justify-content:center">
+            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12.74V17a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-2.26A7 7 0 0 0 12 2z"/></svg>
+          </div>
+          <div style="font-size:13px;font-weight:600;color:var(--t1)" id="txt-ideasForYou">Ideas for your business</div>
+        </div>
+        <div id="analyzerIdeas" style="display:flex;flex-direction:column;gap:8px"></div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -1611,6 +1723,20 @@ var STRINGS = {
     tipOfDay: 'TIP OF THE DAY',
     ideasFor: 'IDEAS FOR',
     generateMore: 'Generate more ideas with AI',
+    marketPulse: 'MARKET PULSE · SAUDI',
+    trendingTags: 'Trending Hashtags',
+    copyAll: 'Copy all',
+    inspiration: 'Inspiration · Saudi Market',
+    aiAnalyzer: 'AI Content Analyzer',
+    aiAnalyzerDesc: 'Paste a post — get instant feedback',
+    analyzerTitle: 'AI Content Analyzer',
+    analyzerHowToTitle: 'How it works',
+    analyzerHowToDesc: 'Paste any marketing post or campaign. AI analyzes it and gives you ideas tailored to your business.',
+    analyzerInputLbl: 'Content to analyze',
+    analyzeBtn: 'Analyze with AI',
+    strengths: 'Strengths',
+    weaknesses: 'Improvements',
+    ideasForYou: 'Ideas for your business',
     // Confirm modal
     areYouSure: 'Are you sure?',
     confirm: 'Confirm',
@@ -1783,6 +1909,20 @@ var STRINGS = {
     tipOfDay: 'نصيحة اليوم',
     ideasFor: 'أفكار لـ',
     generateMore: 'ولّد أفكار جديدة بـ AI',
+    marketPulse: 'نبض السوق · السعودية',
+    trendingTags: 'هاشتاقات رائجة',
+    copyAll: 'نسخ الكل',
+    inspiration: 'إلهام · السوق السعودي',
+    aiAnalyzer: 'محلل المحتوى الذكي',
+    aiAnalyzerDesc: 'الصق منشور — احصل على تحليل فوري',
+    analyzerTitle: 'محلل المحتوى الذكي',
+    analyzerHowToTitle: 'كيف يعمل',
+    analyzerHowToDesc: 'الصق أي منشور أو حملة تسويقية. الذكاء الاصطناعي يحللها ويعطيك أفكار مخصصة لنشاطك.',
+    analyzerInputLbl: 'المحتوى للتحليل',
+    analyzeBtn: 'حلّل بـ AI',
+    strengths: 'نقاط القوة',
+    weaknesses: 'فرص التحسين',
+    ideasForYou: 'أفكار لنشاطك',
     // Confirm modal
     areYouSure: 'هل أنت متأكد؟',
     confirm: 'تأكيد',
@@ -1861,6 +2001,20 @@ function applyAllTranslations() {
     'txt-dailyBrief': 'dailyBrief',
     'txt-tipOfDay': 'tipOfDay',
     'txt-generateMore': 'generateMore',
+    'txt-marketPulse': 'marketPulse',
+    'txt-trendingTags': 'trendingTags',
+    'txt-copyAll': 'copyAll',
+    'txt-inspiration': 'inspiration',
+    'txt-aiAnalyzer': 'aiAnalyzer',
+    'txt-aiAnalyzerDesc': 'aiAnalyzerDesc',
+    'txt-analyzerTitle': 'analyzerTitle',
+    'txt-analyzerHowToTitle': 'analyzerHowToTitle',
+    'txt-analyzerHowToDesc': 'analyzerHowToDesc',
+    'txt-analyzerInputLbl': 'analyzerInputLbl',
+    'txt-analyzeBtn': 'analyzeBtn',
+    'txt-strengths': 'strengths',
+    'txt-weaknesses': 'weaknesses',
+    'txt-ideasForYou': 'ideasForYou',
     'txt-language': 'language',
     'txt-signOut': 'signOut',
     'txt-newNote': 'newNote',
@@ -2805,6 +2959,7 @@ function go(id) {
     } catch(e) {}
   }
   if (id === 's-notif') { try { renderNotifList(); } catch(e) {} }
+  if (id === 's-analyzer') { try { setupAnalyzerCounter(); } catch(e) {} }
 }
 
 function navTo(i) {
@@ -3292,6 +3447,435 @@ var DAILY_TIPS_EN = [
 // Library of placeholder content ideas grouped by business type and event tag.
 // At runtime we pick 3 based on user's bizType + upcoming event.
 // This is the data Claude will eventually replace.
+// ─────────────────────────────────────────────────────
+// TREND INTELLIGENCE — Placeholders for now.
+// When wired up to AI, replace the SOURCE; the UI stays.
+// All data targets the Saudi market for the first launch.
+// ─────────────────────────────────────────────────────
+
+// Market Pulse — daily snapshot of trending topics in the Saudi market.
+// Each entry: { topic, change, category }. Rotates by day of year.
+var MARKET_PULSE_AR = [
+  [
+    { topic: '#اليوم_العالمي_للقهوة', change: '+340%', category: 'food' },
+    { topic: '#رمضان_كريم', change: '+1200%', category: 'religious' },
+    { topic: '#الجمعة_البيضاء', change: '+580%', category: 'shopping' }
+  ],
+  [
+    { topic: '#يوم_التأسيس', change: '+890%', category: 'national' },
+    { topic: '#صباح_السعودية', change: '+45%', category: 'lifestyle' },
+    { topic: '#تخفيضات_الصيف', change: '+220%', category: 'shopping' }
+  ],
+  [
+    { topic: '#اليوم_الوطني_السعودي', change: '+1100%', category: 'national' },
+    { topic: '#قهوة_مختصة', change: '+85%', category: 'food' },
+    { topic: '#موضة_خليجية', change: '+120%', category: 'fashion' }
+  ],
+  [
+    { topic: '#حملة_الرياض', change: '+260%', category: 'lifestyle' },
+    { topic: '#فعاليات_جدة', change: '+180%', category: 'tourism' },
+    { topic: '#متجري_السعودي', change: '+95%', category: 'ecommerce' }
+  ],
+  [
+    { topic: '#عيد_الفطر', change: '+780%', category: 'religious' },
+    { topic: '#مطاعم_الرياض', change: '+150%', category: 'food' },
+    { topic: '#عقارات_السعودية', change: '+70%', category: 'realestate' }
+  ]
+];
+var MARKET_PULSE_EN = [
+  [
+    { topic: '#InternationalCoffeeDay', change: '+340%', category: 'food' },
+    { topic: '#Ramadan', change: '+1200%', category: 'religious' },
+    { topic: '#WhiteFriday', change: '+580%', category: 'shopping' }
+  ],
+  [
+    { topic: '#FoundingDay', change: '+890%', category: 'national' },
+    { topic: '#GoodMorningSaudi', change: '+45%', category: 'lifestyle' },
+    { topic: '#SummerSales', change: '+220%', category: 'shopping' }
+  ],
+  [
+    { topic: '#SaudiNationalDay', change: '+1100%', category: 'national' },
+    { topic: '#SpecialtyCoffee', change: '+85%', category: 'food' },
+    { topic: '#GulfFashion', change: '+120%', category: 'fashion' }
+  ],
+  [
+    { topic: '#RiyadhSeason', change: '+260%', category: 'lifestyle' },
+    { topic: '#JeddahEvents', change: '+180%', category: 'tourism' },
+    { topic: '#SaudiStore', change: '+95%', category: 'ecommerce' }
+  ],
+  [
+    { topic: '#EidAlFitr', change: '+780%', category: 'religious' },
+    { topic: '#RiyadhRestaurants', change: '+150%', category: 'food' },
+    { topic: '#SaudiRealEstate', change: '+70%', category: 'realestate' }
+  ]
+];
+
+// Hashtags library — by event type. Each event gets 5 AR + 5 EN.
+var HASHTAGS_LIB = {
+  ar: {
+    religious: ['#رمضان_كريم','#رمضان','#عيد_مبارك','#الشهر_الفضيل','#كل_عام_وأنتم_بخير'],
+    national: ['#اليوم_الوطني','#السعودية','#وطن_العز','#رؤية_2030','#فخر_سعودي'],
+    seasonal: ['#تخفيضات','#عروض_حصرية','#الجمعة_البيضاء','#مناسبات','#لا_تفوت_العرض'],
+    generic: ['#السعودية','#الرياض','#جدة','#تسويق','#متجري_السعودي']
+  },
+  en: {
+    religious: ['#Ramadan','#EidMubarak','#HolyMonth','#BlessedDays','#Eid'],
+    national: ['#SaudiArabia','#NationalDay','#Vision2030','#SaudiPride','#KSA'],
+    seasonal: ['#Sale','#ExclusiveOffer','#WhiteFriday','#LimitedTime','#DontMissOut'],
+    generic: ['#Saudi','#Riyadh','#Jeddah','#Marketing','#SaudiBusiness']
+  }
+};
+
+// Inspiration gallery — successful campaigns from Saudi market. Filtered by business type.
+var INSPIRATION_LIB = {
+  ar: {
+    food: [
+      {
+        brand: 'دانكن',
+        campaign: 'حملة "قهوتك بطعم الذكريات" — رمضان',
+        why: 'استخدمت قصص عائلية قصيرة بدلاً من إعلان مباشر، وحققت 3 مليون مشاهدة',
+        ideas: ['اعرض قصة عائلة تتجمع حول طبقك', 'فيديو قصير عن أصول وصفة من بلدك', 'منشور "ذكريات الجدة" مع وجبتك']
+      },
+      {
+        brand: 'ستاربكس السعودية',
+        campaign: 'حملة "قهوة عربية" — اليوم الوطني',
+        why: 'دمجوا الـ branding العالمي مع الهوية المحلية بشكل أنيق',
+        ideas: ['أضف لمسة سعودية على عرضك الأصلي', 'مشروب محدود مستوحى من التراث', 'تغليف خاص بألوان العلم']
+      },
+      {
+        brand: 'مطعم نجد',
+        campaign: 'حملة "وجبة الأهل" — العيد',
+        why: 'باقات عائلية بسعر خاص + توصيل مجاني = طلبات تضاعفت 5x',
+        ideas: ['باقة "وجبة العائلة" بسعر مميز', 'توصيل مجاني للطلبات فوق 200 ريال', 'هدية حلوى عند طلب العائلة']
+      }
+    ],
+    ecommerce: [
+      {
+        brand: 'نمشي',
+        campaign: 'حملة "إطلالة العيد" — عيد الفطر',
+        why: 'محتوى influencer + قسم خاص بالموقع + خصم تدريجي',
+        ideas: ['اعمل lookbook لمناسبتك القادمة', 'تعاون مع influencer محلي', 'خصم يزيد كل ساعة لمدة 24 ساعة']
+      },
+      {
+        brand: 'سيفي',
+        campaign: 'حملة "موسم الرياض" — موسم سياحي',
+        why: 'استغلوا الترند الموسمي + منتجات مخصصة + bundles',
+        ideas: ['أنشئ مجموعة موسمية محدودة', 'bundle "ضروريات الموسم"', 'توصيل بنفس اليوم في الرياض']
+      },
+      {
+        brand: 'متجر هند',
+        campaign: 'حملة "أهلاً مدارس" — الـ Back to School',
+        why: 'محتوى تعليمي مفيد + منتجات عملية + تخفيضات للأمهات',
+        ideas: ['دليل "ضروريات السنة الدراسية"', 'خصم خاص للأمهات بكود MOM10', 'حزمة منتجات للأم العاملة']
+      }
+    ],
+    beauty: [
+      {
+        brand: 'عيادات اوبجي',
+        campaign: 'حملة "استعد للعيد" — قبل العيد',
+        why: 'باقات تجميل مدروسة + حجوزات مبكرة + نتائج قبل/بعد',
+        ideas: ['باقة "جاهز للمناسبة" بسعر خاص', 'حجوزات مبكرة قبل 30 يوم بخصم 25%', 'صور قبل/بعد لعملاء سابقين']
+      },
+      {
+        brand: 'صيدلية النهدي',
+        campaign: 'حملة "بشرة رمضان" — رمضان',
+        why: 'نصائح يومية للعناية أثناء الصيام + روتين مبسط',
+        ideas: ['سلسلة محتوى يومي للعناية بالبشرة', 'باقة منتجات "روتين رمضان"', 'استشارة مجانية للمتابعين']
+      },
+      {
+        brand: 'مركز سيتي ووك',
+        campaign: 'حملة "هدية المرأة" — يوم المرأة',
+        why: 'تركيز على القيمة العاطفية + بطاقات هدايا',
+        ideas: ['بطاقة هدية بتصميم خاص', 'باقة "هدية أمي" بسعر مميز', 'جلسة استشارة مجانية كهدية']
+      }
+    ],
+    professional: [
+      {
+        brand: 'PwC السعودية',
+        campaign: 'حملة "رؤية 2030" — اليوم الوطني',
+        why: 'محتوى تقاريري عميق + بيانات حصرية + LinkedIn organic',
+        ideas: ['تقرير قصير عن قطاعك في 2030', 'إنفوجرافيك بإحصائيات حصرية', 'سلسلة LinkedIn عن التحولات']
+      },
+      {
+        brand: 'مكتب الكثيري',
+        campaign: 'حملة "استشارة مجانية" — رمضان',
+        why: 'عرض القيمة قبل البيع + بناء ثقة + قائمة بريدية',
+        ideas: ['ساعة استشارة مجانية للعملاء الجدد', 'webinar مجاني لمشتركي البريد', 'دليل PDF مجاني مقابل بيانات']
+      },
+      {
+        brand: 'كنوز للاستشارات',
+        campaign: 'حملة "تقرير الربع" — نهاية السنة',
+        why: 'محتوى موسمي + بيانات مفيدة + positioning كخبير',
+        ideas: ['تقرير ربعي مجاني لجمهورك', 'webinar نهاية السنة', 'predictions للسنة القادمة']
+      }
+    ],
+    realestate: [
+      {
+        brand: 'الراجحي العقارية',
+        campaign: 'حملة "بيتك بالعيد" — العيد',
+        why: 'تمويل خاص + معارض ميدانية + استشارة شخصية',
+        ideas: ['تمويل خاص بمناسبة الموسم', 'open house فعالية ميدانية', 'استشارة عقارية مجانية']
+      },
+      {
+        brand: 'موبايلي أوتو',
+        campaign: 'حملة "اليوم الوطني" — اليوم الوطني',
+        why: 'عروض حصرية + tags بهوية وطنية + financing سهل',
+        ideas: ['عرض سيارة خاص لـ 24 ساعة', 'تأمين مجاني للسنة الأولى', 'دفعة أولى رمزية بمناسبة الموسم']
+      },
+      {
+        brand: 'السياحة السعودية',
+        campaign: 'حملة "اكتشف وطنك" — اليوم الوطني',
+        why: 'محتوى مرئي قوي + قصص محلية + رحلات ميسرة',
+        ideas: ['دليل "أفضل 10 وجهات" داخل المملكة', 'باقات سياحة محلية بسعر خاص', 'فيديو قصير لوجهة مخفية']
+      }
+    ],
+    education: [
+      {
+        brand: 'منصة مدرستي',
+        campaign: 'حملة "أهلاً مدارس" — Back to School',
+        why: 'محتوى تعليمي مجاني + community للأمهات + دروس قصيرة',
+        ideas: ['دروس مجانية لأول أسبوع', 'مجموعة WhatsApp للأمهات', 'فيديوهات نصائح يومية']
+      },
+      {
+        brand: 'أكاديمية إعمار',
+        campaign: 'حملة "تعلم اللغة" — اليوم العالمي للغة',
+        why: 'خصومات موسمية + شهادات معتمدة + مسار واضح',
+        ideas: ['خصم بمناسبة اليوم العالمي', 'شهادة مجانية مع الدورة', 'خارطة تعلم 90 يوم']
+      },
+      {
+        brand: 'مهارات للتدريب',
+        campaign: 'حملة "تطوير ذاتي" — السنة الجديدة',
+        why: 'استغلوا موسم القرارات + باقات شاملة + ضمان نتائج',
+        ideas: ['باقة "أهداف 2026" شاملة', 'ضمان استرداد إذا لم تتحسن', 'قصص نجاح من خريجين']
+      }
+    ],
+    other: [
+      {
+        brand: 'علامة محلية',
+        campaign: 'حملة موسمية ناجحة',
+        why: 'استغلال الترند + محتوى أصلي + تفاعل قوي',
+        ideas: ['استغل الترند الحالي في مجالك', 'محتوى أصلي يميزك عن المنافسين', 'تفاعل مباشر مع جمهورك']
+      }
+    ]
+  },
+  en: {
+    food: [
+      { brand: 'Dunkin', campaign: '"Coffee of Memories" — Ramadan', why: 'Used short family stories instead of direct ads, hit 3M views', ideas: ['Show a family gathering around your dish', 'Short video about your recipe origins', '"Grandma\'s memories" post with your meal'] },
+      { brand: 'Starbucks KSA', campaign: '"Arabic Coffee" — National Day', why: 'Mixed global branding with local identity elegantly', ideas: ['Add a Saudi touch to your signature offer', 'Limited heritage-inspired drink', 'Special packaging in flag colors'] },
+      { brand: 'Najd Restaurant', campaign: '"Family Meal" — Eid', why: 'Family bundles + free delivery = 5x orders', ideas: ['Family meal bundle at special price', 'Free delivery on orders over 200 SAR', 'Free dessert with family orders'] }
+    ],
+    ecommerce: [
+      { brand: 'Namshi', campaign: '"Eid Look" — Eid al-Fitr', why: 'Influencer content + dedicated landing + tiered discount', ideas: ['Create a lookbook for your next event', 'Partner with local influencer', 'Hourly increasing discount for 24h'] },
+      { brand: 'Cifi', campaign: '"Riyadh Season" — Tourist season', why: 'Leveraged seasonal trend + curated products + bundles', ideas: ['Limited seasonal collection', '"Season essentials" bundle', 'Same-day delivery in Riyadh'] },
+      { brand: 'Hind Store', campaign: '"Back to School" — September', why: 'Educational content + practical products + mom discounts', ideas: ['"School year essentials" guide', 'MOM10 code special discount', 'Working mom bundle'] }
+    ],
+    beauty: [
+      { brand: 'Obagi Clinics', campaign: '"Get Ready for Eid" — Pre-Eid', why: 'Curated packages + early bookings + before/after results', ideas: ['"Event-ready" package at special price', '25% off for bookings 30 days early', 'Before/after photos from past clients'] },
+      { brand: 'Nahdi Pharmacy', campaign: '"Ramadan Skin" — Ramadan', why: 'Daily tips for fasting care + simplified routine', ideas: ['Daily skincare content series', '"Ramadan routine" product bundle', 'Free consultation for followers'] },
+      { brand: 'City Walk Center', campaign: '"Gift for Her" — Women\'s Day', why: 'Focused on emotional value + gift cards', ideas: ['Special-design gift card', '"For Mom" package at premium price', 'Free consultation session as gift'] }
+    ],
+    professional: [
+      { brand: 'PwC Saudi', campaign: '"Vision 2030" — National Day', why: 'Deep report content + exclusive data + LinkedIn organic', ideas: ['Short sector report for 2030', 'Infographic with exclusive stats', 'LinkedIn series on transformations'] },
+      { brand: 'Al-Kathiri Office', campaign: '"Free Consultation" — Ramadan', why: 'Offered value first + built trust + email list', ideas: ['Free 1-hour consultation for new clients', 'Free webinar for email subscribers', 'Free PDF guide in exchange for data'] },
+      { brand: 'Kunooz Consulting', campaign: '"Quarterly Report" — Year-end', why: 'Seasonal content + useful data + expert positioning', ideas: ['Free quarterly report for your audience', 'Year-end webinar', 'Predictions for next year'] }
+    ],
+    realestate: [
+      { brand: 'Al Rajhi Real Estate', campaign: '"Your Home for Eid" — Eid', why: 'Special financing + on-site events + personal consultation', ideas: ['Seasonal special financing', 'Open house event', 'Free real estate consultation'] },
+      { brand: 'Mobily Auto', campaign: '"National Day" — National Day', why: 'Exclusive offers + national branding + easy financing', ideas: ['24-hour special car offer', 'Free insurance for first year', 'Token down payment for the season'] },
+      { brand: 'Saudi Tourism', campaign: '"Discover Your Country" — National Day', why: 'Strong visual content + local stories + accessible trips', ideas: ['"Top 10 destinations" guide in KSA', 'Local tourism packages at special prices', 'Short video of a hidden destination'] }
+    ],
+    education: [
+      { brand: 'Madrasati', campaign: '"Welcome Schools" — Back to School', why: 'Free educational content + mom community + short lessons', ideas: ['Free lessons for the first week', 'WhatsApp group for moms', 'Daily tip videos'] },
+      { brand: 'Emaar Academy', campaign: '"Learn Language" — International Language Day', why: 'Seasonal discounts + certified certificates + clear path', ideas: ['International Day discount', 'Free certificate with course', '90-day learning roadmap'] },
+      { brand: 'Maharat Training', campaign: '"Self Development" — New Year', why: 'Leveraged resolution season + comprehensive packages + results guarantee', ideas: ['Comprehensive "2026 Goals" package', 'Refund guarantee if no improvement', 'Success stories from graduates'] }
+    ],
+    other: [
+      { brand: 'Local Brand', campaign: 'Successful seasonal campaign', why: 'Trend leverage + original content + strong engagement', ideas: ['Leverage current trend in your field', 'Original content that sets you apart', 'Direct engagement with your audience'] }
+    ]
+  }
+};
+
+// Pick today's market pulse — deterministic by day so it doesn't flicker
+function getTodayPulse() {
+  var pulses = lang === 'ar' ? MARKET_PULSE_AR : MARKET_PULSE_EN;
+  var dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0)) / 86400000);
+  return pulses[dayOfYear % pulses.length];
+}
+
+// Render Market Pulse list in Daily Brief
+function renderMarketPulse() {
+  var list = document.getElementById('briefPulseList');
+  if (!list) return;
+  list.innerHTML = '';
+  var pulse = getTodayPulse();
+  pulse.forEach(function(item) {
+    var row = document.createElement('div');
+    row.style.cssText = 'background:rgba(255,255,255,.7);border-radius:11px;padding:9px 12px;display:flex;align-items:center;gap:10px';
+    var isHigh = item.change && item.change.indexOf('+') === 0 && parseInt(item.change.replace(/[+%]/g,'')) > 200;
+    row.innerHTML =
+      '<div style="flex:1;min-width:0">'
+        + '<div style="font-size:12px;font-weight:600;color:var(--t1);overflow:hidden;text-overflow:ellipsis;white-space:nowrap">' + item.topic + '</div>'
+      + '</div>'
+      + '<div style="background:' + (isHigh ? 'var(--green-l)' : 'var(--card2)') + ';color:' + (isHigh ? 'var(--green)' : 'var(--t2)') + ';font-size:11px;font-weight:700;padding:3px 8px;border-radius:8px;flex-shrink:0">' + item.change + '</div>';
+    row.addEventListener('click', function() { copyIdea(item.topic); });
+    list.appendChild(row);
+  });
+}
+
+// Get hashtags for an event based on its type
+function getHashtagsForEvent(ev) {
+  if (!ev) return [];
+  var lib = lang === 'ar' ? HASHTAGS_LIB.ar : HASHTAGS_LIB.en;
+  var key = 'generic';
+  if (ev.type === 'religious') key = 'religious';
+  else if (ev.type === 'national') key = 'national';
+  else if (ev.type === 'seasonal') key = 'seasonal';
+  // Combine event-specific + generic for variety, dedupe
+  var specific = lib[key] || [];
+  var generic = lib.generic || [];
+  var combined = specific.concat(generic.slice(0, 5));
+  var seen = {};
+  return combined.filter(function(h) { if (seen[h]) return false; seen[h] = true; return true; }).slice(0, 10);
+}
+
+// Render hashtags in event detail
+function renderEventHashtags(ev) {
+  var list = document.getElementById('hashtagsList');
+  if (!list) return;
+  list.innerHTML = '';
+  var tags = getHashtagsForEvent(ev);
+  tags.forEach(function(tag) {
+    var pill = document.createElement('div');
+    pill.style.cssText = 'background:var(--blue-l);color:var(--blue);font-size:12px;font-weight:600;padding:6px 12px;border-radius:50px;cursor:pointer;border:1.5px solid transparent;transition:border-color .15s';
+    pill.textContent = tag;
+    pill.addEventListener('click', function() { copyIdea(tag); });
+    list.appendChild(pill);
+  });
+}
+
+// Copy ALL hashtags as one string ready to paste
+function copyAllHashtags() {
+  if (!currentEvent) return;
+  var tags = getHashtagsForEvent(currentEvent);
+  var combined = tags.join(' ');
+  try {
+    navigator.clipboard.writeText(combined).then(function() {
+      toast('✓ ' + (lang === 'ar' ? 'تم نسخ ' + tags.length + ' هاشتاق' : tags.length + ' hashtags copied'));
+    });
+  } catch(e) {}
+}
+
+// Get inspiration campaigns matching user's business type
+function getInspirationForEvent(ev) {
+  var bizCode = userData.bizType || 'other';
+  var langCode = lang === 'ar' ? 'ar' : 'en';
+  var lib = INSPIRATION_LIB[langCode] || INSPIRATION_LIB.en;
+  return (lib[bizCode] || lib.other || []).slice(0, 3);
+}
+
+// Render inspiration cards in event detail
+function renderEventInspiration(ev) {
+  var list = document.getElementById('inspirationList');
+  if (!list) return;
+  list.innerHTML = '';
+  var campaigns = getInspirationForEvent(ev);
+  if (!campaigns.length) { list.innerHTML = '<div style="font-size:13px;color:var(--t3);text-align:center;padding:12px">No inspiration available</div>'; return; }
+  campaigns.forEach(function(c) {
+    var card = document.createElement('div');
+    card.style.cssText = 'background:var(--card2);border-radius:14px;padding:14px';
+    var ideasHtml = '';
+    (c.ideas || []).forEach(function(idea, i) {
+      ideasHtml += '<div style="font-size:12px;color:var(--t2);line-height:1.6;display:flex;gap:6px;align-items:flex-start;cursor:pointer" onclick="copyIdea(this.dataset.idea)" data-idea="' + idea.replace(/"/g, '&quot;') + '"><span style="color:var(--gold);font-weight:700;flex-shrink:0">' + (i+1) + '.</span><span>' + idea + '</span></div>';
+    });
+    card.innerHTML =
+      '<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:6px;gap:8px">'
+        + '<div style="font-size:13px;font-weight:600;color:var(--t1)">' + c.brand + '</div>'
+        + '<div style="font-size:10px;color:var(--gold);background:var(--gold-l);padding:2px 8px;border-radius:50px;font-weight:600;flex-shrink:0">' + (lang === 'ar' ? 'حملة' : 'CASE') + '</div>'
+      + '</div>'
+      + '<div style="font-size:12px;color:var(--t2);margin-bottom:6px;line-height:1.5">' + c.campaign + '</div>'
+      + '<div style="font-size:11px;color:var(--t3);margin-bottom:10px;line-height:1.5;font-style:italic">' + (lang === 'ar' ? 'ليش نجحت: ' : 'Why it worked: ') + c.why + '</div>'
+      + '<div style="border-top:1px dashed var(--border);padding-top:10px">'
+        + '<div style="font-size:10px;font-weight:700;color:var(--gold);letter-spacing:.8px;text-transform:uppercase;margin-bottom:8px">' + (lang === 'ar' ? 'أفكار لك' : 'Ideas for you') + '</div>'
+        + '<div style="display:flex;flex-direction:column;gap:7px">' + ideasHtml + '</div>'
+      + '</div>';
+    list.appendChild(card);
+  });
+}
+
+// AI Analyzer — fake analysis output (replace with Claude API later)
+function runAnalyzer() {
+  var input = document.getElementById('analyzerInput').value.trim();
+  if (!input || input.length < 20) {
+    toast(lang === 'ar' ? 'الصق محتوى أطول (20 حرف على الأقل)' : 'Paste longer content (min 20 chars)');
+    return;
+  }
+  var btn = document.getElementById('analyzeBtn');
+  var result = document.getElementById('analyzerResult');
+  btn.style.opacity = '0.6';
+  btn.disabled = true;
+  var origText = document.getElementById('txt-analyzeBtn').textContent;
+  document.getElementById('txt-analyzeBtn').textContent = lang === 'ar' ? 'جاري التحليل...' : 'Analyzing...';
+  // Simulated AI delay
+  setTimeout(function() {
+    var biz = getBizType(userData.bizType || 'other');
+    var bizName = lang === 'ar' ? biz.nameAr : biz.nameEn;
+    // Placeholder analysis output
+    var strengths, weaknesses, ideas;
+    if (lang === 'ar') {
+      strengths = 'المحتوى يحتوي على رسالة واضحة. النبرة احترافية ومناسبة للجمهور المستهدف. الطول مناسب للسوشال ميديا.';
+      weaknesses = 'يفتقر لـ Call-to-Action واضح. الهاشتاقات قليلة. لا يوجد سؤال يحفّز التفاعل.';
+      ideas = [
+        'أضف CTA واضح: "احجز الآن"، "اطلب اليوم"، أو "اضغط الرابط"',
+        'استخدم 5-7 هاشتاقات متعلقة بـ' + bizName,
+        'ابدأ بسؤال يحفز جمهورك على التعليق'
+      ];
+    } else {
+      strengths = 'Content has a clear message. The tone is professional and appropriate for the target audience. Length is well-suited for social media.';
+      weaknesses = 'Missing a clear Call-to-Action. Hashtags are minimal. No question to drive engagement.';
+      ideas = [
+        'Add a clear CTA: "Book now", "Order today", or "Tap the link"',
+        'Use 5-7 hashtags relevant to ' + bizName,
+        'Start with a question to drive comments'
+      ];
+    }
+    document.getElementById('analyzerStrengths').textContent = strengths;
+    document.getElementById('analyzerWeaknesses').textContent = weaknesses;
+    var ideasContainer = document.getElementById('analyzerIdeas');
+    ideasContainer.innerHTML = '';
+    ideas.forEach(function(idea, i) {
+      var row = document.createElement('div');
+      row.style.cssText = 'background:var(--card2);border-radius:11px;padding:11px 12px;display:flex;align-items:flex-start;gap:9px;cursor:pointer';
+      row.innerHTML =
+        '<div style="width:20px;height:20px;border-radius:6px;background:var(--gold-l);color:var(--gold);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:11px;font-weight:700">' + (i + 1) + '</div>'
+        + '<div style="flex:1;font-size:12px;color:var(--t1);line-height:1.5">' + idea + '</div>';
+      row.addEventListener('click', function() { copyIdea(idea); });
+      ideasContainer.appendChild(row);
+    });
+    result.style.display = 'block';
+    btn.style.opacity = '';
+    btn.disabled = false;
+    document.getElementById('txt-analyzeBtn').textContent = origText;
+    // Scroll result into view
+    setTimeout(function() {
+      result.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 100);
+  }, 1500);
+}
+
+// Wire up character counter on the analyzer input
+function setupAnalyzerCounter() {
+  var input = document.getElementById('analyzerInput');
+  var counter = document.getElementById('analyzerCharCount');
+  if (!input || !counter || input._counterWired) return;
+  input._counterWired = true;
+  input.addEventListener('input', function() {
+    var len = input.value.length;
+    if (len > 2000) { input.value = input.value.slice(0, 2000); return; }
+    counter.textContent = len + ' / 2000';
+    counter.style.color = len > 1800 ? 'var(--red)' : 'var(--t3)';
+  });
+}
+
 var IDEA_LIBRARY = {
   ar: {
     food: {
@@ -3536,6 +4120,8 @@ function renderDailyBrief() {
   // Today's tip
   var tipEl = document.getElementById('briefTipText');
   if (tipEl) tipEl.textContent = getTodayTip();
+  // Market pulse (trending topics in the Saudi market)
+  try { renderMarketPulse(); } catch(e) {}
   // Pick the next upcoming event (skip past)
   var evs = allEvs().filter(function(e) { return !isEventPast(e); });
   var nextEv = evs[0];
@@ -3683,6 +4269,9 @@ function openEventDetail(ev) {
   if (addReminderBtn) addReminderBtn.style.display = past ? 'none' : '';
   renderEventNotes();
   renderReminders();
+  // Trend intelligence — hashtags and inspiration for this event
+  try { renderEventHashtags(ev); } catch(e) {}
+  try { renderEventInspiration(ev); } catch(e) {}
   go('s-event-detail');
 }
 
