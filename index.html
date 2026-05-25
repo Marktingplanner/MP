@@ -701,6 +701,53 @@ sb.auth.onAuthStateChange(function(event, session) {
     </div>
   </div>
 
+  <!-- DAILY BRIEF — content ideas + tip for today, personalized to business type -->
+  <div style="padding:0 24px 16px;flex-shrink:0" id="dailyBriefSection">
+    <div style="background:linear-gradient(135deg,#FFF8E1 0%,#FFF3E0 100%);border:1.5px solid rgba(184,134,11,.15);border-radius:24px;padding:20px;position:relative;overflow:hidden">
+      <!-- decorative blob -->
+      <div style="position:absolute;top:-40px;right:-40px;width:140px;height:140px;border-radius:50%;background:rgba(184,134,11,.06)"></div>
+      
+      <!-- Header with date + AI badge -->
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:14px;position:relative">
+        <div>
+          <div style="font-size:10px;font-weight:700;color:var(--gold);letter-spacing:1.2px;text-transform:uppercase;margin-bottom:4px" id="txt-dailyBrief">DAILY BRIEF</div>
+          <div id="briefGreeting" style="font-family:'DM Serif Display',serif;font-size:18px;color:var(--t1);line-height:1.3">Good morning</div>
+        </div>
+        <div style="background:rgba(184,134,11,.15);border-radius:10px;padding:5px 10px;display:flex;align-items:center;gap:5px">
+          <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="var(--gold)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+          <span style="font-size:10px;font-weight:600;color:var(--gold)">AI</span>
+        </div>
+      </div>
+
+      <!-- Today's tip -->
+      <div id="briefTip" style="background:rgba(255,255,255,.7);border-radius:14px;padding:12px 14px;margin-bottom:14px;position:relative">
+        <div style="display:flex;gap:8px;align-items:flex-start">
+          <div style="width:22px;height:22px;border-radius:7px;background:var(--gold);display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M12 2a7 7 0 0 0-4 12.74V17a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1v-2.26A7 7 0 0 0 12 2z"/></svg>
+          </div>
+          <div style="flex:1">
+            <div style="font-size:10px;font-weight:700;color:var(--t3);letter-spacing:.8px;text-transform:uppercase;margin-bottom:3px" id="txt-tipOfDay">TIP OF THE DAY</div>
+            <div id="briefTipText" style="font-size:13px;color:var(--t1);line-height:1.5">Customize content ideas by setting your business type</div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Content ideas linked to upcoming event -->
+      <div id="briefIdeasBlock" style="margin-bottom:14px">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px">
+          <div style="font-size:11px;font-weight:700;color:var(--t2);letter-spacing:.8px;text-transform:uppercase" id="txt-ideasFor">IDEAS FOR <span id="briefEventName" style="color:var(--gold)">UPCOMING EVENT</span></div>
+        </div>
+        <div id="briefIdeasList" style="display:flex;flex-direction:column;gap:6px"></div>
+      </div>
+
+      <!-- Generate more button -->
+      <button onclick="generateMoreIdeas()" style="width:100%;padding:12px;background:var(--gold);color:#fff;border:none;border-radius:14px;font-family:DM Sans,sans-serif;font-size:13px;font-weight:600;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2l3.09 6.26L22 9.27l-5 4.87 1.18 6.88L12 17.77l-6.18 3.25L7 14.14 2 9.27l6.91-1.01L12 2z"/></svg>
+        <span id="txt-generateMore">Generate more ideas with AI</span>
+      </button>
+    </div>
+  </div>
+
   <!-- TIMELINE -->
   <div style="padding:0 24px;display:flex;justify-content:space-between;align-items:center;margin-bottom:14px;flex-shrink:0">
     <div id="txt-allEvents" style="font-size:13px;font-weight:600;color:var(--t1);letter-spacing:.3px">Up Next</div>
@@ -1101,70 +1148,26 @@ document.documentElement.lang = _savedLang;
 // ── DATA ──
 const LANGS=[
   {code:'ar',name:'Arabic',native:'العربية',flag:'🇸🇦'},
-  {code:'en',name:'English',native:'English',flag:'🇬🇧'},
-  {code:'fr',name:'French',native:'Français',flag:'🇫🇷'},
-  {code:'es',name:'Spanish',native:'Español',flag:'🇪🇸'},
-  {code:'de',name:'German',native:'Deutsch',flag:'🇩🇪'},
-  {code:'zh',name:'Chinese',native:'中文',flag:'🇨🇳'},
-  {code:'ja',name:'Japanese',native:'日本語',flag:'🇯🇵'},
-  {code:'tr',name:'Turkish',native:'Türkçe',flag:'🇹🇷'},
-  {code:'pt',name:'Portuguese',native:'Português',flag:'🇵🇹'},
-  {code:'ru',name:'Russian',native:'Русский',flag:'🇷🇺'},
-  {code:'ko',name:'Korean',native:'한국어',flag:'🇰🇷'},
-  {code:'hi',name:'Hindi',native:'हिन्दी',flag:'🇮🇳'},
-  {code:'it',name:'Italian',native:'Italiano',flag:'🇮🇹'},
-  {code:'nl',name:'Dutch',native:'Nederlands',flag:'🇳🇱'},
-  {code:'fa',name:'Persian',native:'فارسی',flag:'🇮🇷'},
-  {code:'ur',name:'Urdu',native:'اردو',flag:'🇵🇰'},
-  {code:'id',name:'Indonesian',native:'Bahasa Indonesia',flag:'🇮🇩'},
-  {code:'ms',name:'Malay',native:'Bahasa Melayu',flag:'🇲🇾'},
-  {code:'th',name:'Thai',native:'ภาษาไทย',flag:'🇹🇭'},
-  {code:'vi',name:'Vietnamese',native:'Tiếng Việt',flag:'🇻🇳'},
-  {code:'sv',name:'Swedish',native:'Svenska',flag:'🇸🇪'},
-  {code:'da',name:'Danish',native:'Dansk',flag:'🇩🇰'},
-  {code:'no',name:'Norwegian',native:'Norsk',flag:'🇳🇴'},
-  {code:'fi',name:'Finnish',native:'Suomi',flag:'🇫🇮'},
-  {code:'pl',name:'Polish',native:'Polski',flag:'🇵🇱'},
-  {code:'ro',name:'Romanian',native:'Română',flag:'🇷🇴'},
-  {code:'cs',name:'Czech',native:'Čeština',flag:'🇨🇿'},
-  {code:'hu',name:'Hungarian',native:'Magyar',flag:'🇭🇺'},
-  {code:'el',name:'Greek',native:'Ελληνικά',flag:'🇬🇷'},
-  {code:'he',name:'Hebrew',native:'עברית',flag:'🇮🇱'},
-  {code:'uk',name:'Ukrainian',native:'Українська',flag:'🇺🇦'},
-  {code:'bn',name:'Bengali',native:'বাংলা',flag:'🇧🇩'},
-  {code:'sw',name:'Swahili',native:'Kiswahili',flag:'🇰🇪'},
-  {code:'az',name:'Azerbaijani',native:'Azərbaycan',flag:'🇦🇿'},
-  {code:'af',name:'Afrikaans',native:'Afrikaans',flag:'🇿🇦'},
-  {code:'sq',name:'Albanian',native:'Shqip',flag:'🇦🇱'},
-  {code:'bg',name:'Bulgarian',native:'Български',flag:'🇧🇬'},
-  {code:'hr',name:'Croatian',native:'Hrvatski',flag:'🇭🇷'},
-  {code:'sk',name:'Slovak',native:'Slovenčina',flag:'🇸🇰'},
-  {code:'mn',name:'Mongolian',native:'Монгол',flag:'🇲🇳'},
-  {code:'ne',name:'Nepali',native:'नेपाली',flag:'🇳🇵'},
-  {code:'am',name:'Amharic',native:'አማርኛ',flag:'🇪🇹'},
-  {code:'my',name:'Burmese',native:'မြန်မာ',flag:'🇲🇲'},
-  {code:'km',name:'Khmer',native:'ខ្មែរ',flag:'🇰🇭'},
-  {code:'ta',name:'Tamil',native:'தமிழ்',flag:'🇱🇰'},
-  {code:'mk',name:'Macedonian',native:'Македонски',flag:'🇲🇰'}
+  {code:'en',name:'English',native:'English',flag:'🇬🇧'}
 ];
 
 const COUNTRIES=[
   {code:'WORLD',name:'World',flag:'🌍',region:'Worldwide',events:[]},
-  {code:'SA',name:'Saudi Arabia',flag:'🇸🇦',region:'Middle East',events:[]},
-  {code:'AE',name:'UAE',flag:'🇦🇪',region:'Middle East',events:[]},
-  {code:'KW',name:'Kuwait',flag:'🇰🇼',region:'Middle East',events:[]},
-  {code:'QA',name:'Qatar',flag:'🇶🇦',region:'Middle East',events:[]},
-  {code:'BH',name:'Bahrain',flag:'🇧🇭',region:'Middle East',events:[]},
-  {code:'OM',name:'Oman',flag:'🇴🇲',region:'Middle East',events:[]},
-  {code:'JO',name:'Jordan',flag:'🇯🇴',region:'Middle East',events:[]},
-  {code:'LB',name:'Lebanon',flag:'🇱🇧',region:'Middle East',events:[]},
-  {code:'SY',name:'Syria',flag:'🇸🇾',region:'Middle East',events:[]},
-  {code:'IQ',name:'Iraq',flag:'🇮🇶',region:'Middle East',events:[]},
-  {code:'YE',name:'Yemen',flag:'🇾🇪',region:'Middle East',events:[]},
-  {code:'PS',name:'Palestine',flag:'🇵🇸',region:'Middle East',events:[]},
+  {code:'SA',name:'Saudi Arabia',flag:'🇸🇦',region:'Arab World',events:[]},
+  {code:'AE',name:'UAE',flag:'🇦🇪',region:'Arab World',events:[]},
+  {code:'KW',name:'Kuwait',flag:'🇰🇼',region:'Arab World',events:[]},
+  {code:'QA',name:'Qatar',flag:'🇶🇦',region:'Arab World',events:[]},
+  {code:'BH',name:'Bahrain',flag:'🇧🇭',region:'Arab World',events:[]},
+  {code:'OM',name:'Oman',flag:'🇴🇲',region:'Arab World',events:[]},
+  {code:'JO',name:'Jordan',flag:'🇯🇴',region:'Arab World',events:[]},
+  {code:'LB',name:'Lebanon',flag:'🇱🇧',region:'Arab World',events:[]},
+  {code:'SY',name:'Syria',flag:'🇸🇾',region:'Arab World',events:[]},
+  {code:'IQ',name:'Iraq',flag:'🇮🇶',region:'Arab World',events:[]},
+  {code:'YE',name:'Yemen',flag:'🇾🇪',region:'Arab World',events:[]},
+  {code:'PS',name:'Palestine',flag:'🇵🇸',region:'Arab World',events:[]},
   {code:'IL',name:'Israel',flag:'🇮🇱',region:'Middle East',events:[]},
   {code:'IR',name:'Iran',flag:'🇮🇷',region:'Middle East',events:[]},
-  {code:'EG',name:'Egypt',flag:'🇪🇬',region:'Middle East',events:[]},
+  {code:'EG',name:'Egypt',flag:'🇪🇬',region:'Arab World',events:[]},
   {code:'TR',name:'Turkey',flag:'🇹🇷',region:'Middle East',events:[]},
   {code:'US',name:'United States',flag:'🇺🇸',region:'Americas',events:[]},
   {code:'CA',name:'Canada',flag:'🇨🇦',region:'Americas',events:[]},
@@ -1263,12 +1266,12 @@ const COUNTRIES=[
   {code:'KE',name:'Kenya',flag:'🇰🇪',region:'Africa',events:[]},
   {code:'ET',name:'Ethiopia',flag:'🇪🇹',region:'Africa',events:[]},
   {code:'GH',name:'Ghana',flag:'🇬🇭',region:'Africa',events:[]},
-  {code:'MA',name:'Morocco',flag:'🇲🇦',region:'Africa',events:[]},
-  {code:'DZ',name:'Algeria',flag:'🇩🇿',region:'Africa',events:[]},
-  {code:'TN',name:'Tunisia',flag:'🇹🇳',region:'Africa',events:[]},
-  {code:'LY',name:'Libya',flag:'🇱🇾',region:'Africa',events:[]},
-  {code:'SD',name:'Sudan',flag:'🇸🇩',region:'Africa',events:[]},
-  {code:'SO',name:'Somalia',flag:'🇸🇴',region:'Africa',events:[]},
+  {code:'MA',name:'Morocco',flag:'🇲🇦',region:'Arab World',events:[]},
+  {code:'DZ',name:'Algeria',flag:'🇩🇿',region:'Arab World',events:[]},
+  {code:'TN',name:'Tunisia',flag:'🇹🇳',region:'Arab World',events:[]},
+  {code:'LY',name:'Libya',flag:'🇱🇾',region:'Arab World',events:[]},
+  {code:'SD',name:'Sudan',flag:'🇸🇩',region:'Arab World',events:[]},
+  {code:'SO',name:'Somalia',flag:'🇸🇴',region:'Arab World',events:[]},
   {code:'UG',name:'Uganda',flag:'🇺🇬',region:'Africa',events:[]},
   {code:'TZ',name:'Tanzania',flag:'🇹🇿',region:'Africa',events:[]},
   {code:'RW',name:'Rwanda',flag:'🇷🇼',region:'Africa',events:[]},
@@ -1604,6 +1607,10 @@ var STRINGS = {
     obBizName: 'Business Name',
     obBizType: 'Business Type',
     obContinue: 'Continue',
+    dailyBrief: 'DAILY BRIEF',
+    tipOfDay: 'TIP OF THE DAY',
+    ideasFor: 'IDEAS FOR',
+    generateMore: 'Generate more ideas with AI',
     // Confirm modal
     areYouSure: 'Are you sure?',
     confirm: 'Confirm',
@@ -1772,6 +1779,10 @@ var STRINGS = {
     obBizName: 'اسم النشاط',
     obBizType: 'نوع النشاط',
     obContinue: 'متابعة',
+    dailyBrief: 'ملخصك اليومي',
+    tipOfDay: 'نصيحة اليوم',
+    ideasFor: 'أفكار لـ',
+    generateMore: 'ولّد أفكار جديدة بـ AI',
     // Confirm modal
     areYouSure: 'هل أنت متأكد؟',
     confirm: 'تأكيد',
@@ -1847,6 +1858,9 @@ function applyAllTranslations() {
     'txt-obBizName': 'obBizName',
     'txt-obBizType': 'obBizType',
     'txt-obContinue': 'obContinue',
+    'txt-dailyBrief': 'dailyBrief',
+    'txt-tipOfDay': 'tipOfDay',
+    'txt-generateMore': 'generateMore',
     'txt-language': 'language',
     'txt-signOut': 'signOut',
     'txt-newNote': 'newNote',
@@ -2914,7 +2928,7 @@ function renderCountryList(f) {
     regions[c.region].push(c);
   });
   // Custom region ordering — Worldwide first, then by intuitive geographic order
-  var regionOrder = ['Worldwide', 'Middle East', 'Africa', 'Europe', 'Asia', 'Americas', 'Oceania'];
+  var regionOrder = ['Worldwide', 'Arab World', 'Middle East', 'Africa', 'Europe', 'Asia', 'Americas', 'Oceania'];
   var orderedRegions = regionOrder.filter(function(r) { return regions[r]; });
   // Append any region not in our predefined list (defensive)
   Object.keys(regions).forEach(function(r) {
@@ -2931,7 +2945,9 @@ function renderCountryList(f) {
       var div = document.createElement('div');
       div.style.cssText = 'background:' + (c.code===country.code?'var(--green-l)':'var(--card)') + ';border:1.5px solid ' + (c.code===country.code?'var(--green)':'var(--border)') + ';border-radius:16px;padding:14px 16px;display:flex;align-items:center;gap:12px;cursor:pointer';
       // For empty event lists (not yet loaded), just show flag+name
-      var evCount = c.events && c.events.length ? c.events.length + ' events' : (c.code === 'WORLD' ? 'Global observances' : 'Tap to load');
+      var evCount = c.events && c.events.length 
+        ? c.events.length + ' events' 
+        : (c.code === 'WORLD' ? 'Global observances' : 'Tap to load');
       div.innerHTML = '<span style="font-size:22px">' + c.flag + '</span>'
         + '<div style="flex:1"><div style="font-size:15px;font-weight:500;color:var(--t1)">' + c.name + '</div>'
         + '<div style="font-size:12px;color:var(--t2);margin-top:1px">' + evCount + '</div></div>'
@@ -3233,7 +3249,347 @@ function finishOnboard() {
 }
 
 // ── HERO ──
+// ── DAILY BRIEF ──
+// Placeholder content. When we wire up Claude API, generateDailyBrief() will
+// call the AI; the rest of the rendering pipeline stays the same.
+
+// Library of generic daily tips — rotates by day of year so it feels fresh
+var DAILY_TIPS_AR = [
+  'انشر بين 7-9 مساءً للوصول الأعلى في السعودية',
+  'الـ Reels والـ Stories تحقق وصول أعلى 3x من المنشورات العادية',
+  'استخدم سؤال في بداية المنشور — يرفع التفاعل 50%',
+  'الكاروسيل (متعدد الصور) يحقق حفظات أكثر من الصورة الواحدة',
+  'انشر باستمرار — 3 منشورات أسبوعياً أفضل من 10 في يوم',
+  'الفيديو القصير (15-30 ثانية) يحقق إكمال مشاهدة أعلى',
+  'استخدم 5-7 هاشتاقات فقط — أكثر من ذلك يضر الوصول',
+  'الجمهور يحب القصص الشخصية — شارك تجربتك خلف الكواليس',
+  'اختبر CTA واضح: "احجز الآن"، "اطلب اليوم"، "احصل على الخصم"',
+  'الردود السريعة على التعليقات ترفع التفاعل بشكل كبير',
+  'صور المنتج بإضاءة طبيعية تتفوق على الاستوديو',
+  'احتفل بأرقام عملائك — ينشئ إحساس بالمصداقية',
+  'اطلب مراجعة من العملاء وانشرها — أقوى تسويق ممكن',
+  'الفكاهة المحلية تبني علاقة أعمق من الإعلانات الرسمية',
+  'لا تنسى الـ Bio — حدّثه ليعكس آخر عرض أو مناسبة'
+];
+var DAILY_TIPS_EN = [
+  'Post between 7-9 PM for peak reach in the Middle East',
+  'Reels and Stories get 3x more reach than regular posts',
+  'Start posts with a question — engagement jumps 50%',
+  'Carousels get more saves than single images',
+  'Consistency wins: 3 posts/week beats 10 in one day',
+  'Short videos (15-30s) have higher completion rates',
+  'Use 5-7 hashtags — more actually hurts reach',
+  'Behind-the-scenes content builds trust faster',
+  'Test clear CTAs: "Book now", "Order today", "Claim offer"',
+  'Reply to comments fast — it boosts engagement',
+  'Natural lighting beats studio shots for products',
+  'Celebrate customer milestones — it builds credibility',
+  'Reposting customer reviews is the strongest free marketing',
+  'Local humor builds deeper connection than formal ads',
+  'Update your bio to reflect the latest offer or event'
+];
+
+// Library of placeholder content ideas grouped by business type and event tag.
+// At runtime we pick 3 based on user's bizType + upcoming event.
+// This is the data Claude will eventually replace.
+var IDEA_LIBRARY = {
+  ar: {
+    food: {
+      generic: [
+        'صور طبق اليوم بإضاءة طبيعية وانشر قبل وقت الغداء',
+        'قصة قصيرة: كيف حضّرت وصفة جديدة هذي الأسبوع',
+        'استطلاع رأي: أي نكهة قهوة تحبون نضيفها؟'
+      ],
+      religious: [
+        'وجبة خاصة مستوحاة من المناسبة + عرض 20% للزوار',
+        'فيديو قصير لتحضير حلوى تقليدية مرتبطة بالمناسبة',
+        'منشور شكر للجمهور بمناسبة الموسم + كوبون خصم'
+      ],
+      national: [
+        'قائمة طعام مستوحاة من المناسبة الوطنية',
+        'ديكور المحل بألوان العلم + تصوير قبل/بعد',
+        'تخفيض على طبق "وطني" خاص لليوم الواحد'
+      ],
+      seasonal: [
+        'منشور مرتبط بالموسم: مشروب صيفي بارد / حساء شتوي',
+        'إعلان عن وجبة محدودة لهذا الموسم فقط',
+        'سلسلة محتوى أسبوعي عن المنتجات الموسمية'
+      ]
+    },
+    ecommerce: {
+      generic: [
+        'صورة منتج بـ flatlay احترافي + خصم 10% للمتابعين',
+        'فيديو unboxing للطلبات الجديدة',
+        'استطلاع: أي لون تفضلون للمجموعة الجديدة؟'
+      ],
+      religious: [
+        'مجموعة مختارة لهدايا المناسبة + توصيل مجاني',
+        'كاروسيل لطرق تنسيق المنتج للمناسبة',
+        'كود خصم خاص للمتابعين بمناسبة الموسم'
+      ],
+      national: [
+        'مجموعة منتجات بألوان وروح المناسبة الوطنية',
+        'فيديو قصير: أفكار هدايا وطنية',
+        'تخفيض حصري لـ 24 ساعة فقط'
+      ],
+      seasonal: [
+        'مجموعة منتجات موسمية حصرية',
+        'دليل تنسيق منتجاتك حسب الموسم',
+        'عرض "اشترِ 2 احصل على الثالث" للموسم'
+      ]
+    },
+    beauty: {
+      generic: [
+        'قبل/بعد لجلسة حقيقية (بإذن العميل)',
+        'نصيحة سريعة من الطبيب/الأخصائي للعناية اليومية',
+        'فيديو شرح عن أحدث جهاز/تقنية في العيادة'
+      ],
+      religious: [
+        'باقة "استعد للمناسبة" بسعر خاص',
+        'نصائح للعناية بالبشرة خلال الصيام/المناسبة',
+        'عرض حجوزات مبكرة قبل المناسبة'
+      ],
+      national: [
+        'باقة احتفالية مميزة بألوان وروح المناسبة',
+        'خصم خاص لـ 24 ساعة للجلسات المختارة',
+        'منشور شكر للعملاء بمناسبة الموسم'
+      ],
+      seasonal: [
+        'علاجات موسمية: الحماية من الشمس / ترطيب الشتاء',
+        'سلسلة نصائح يومية للعناية حسب الموسم',
+        'باقة موسمية بسعر مخفض'
+      ]
+    },
+    professional: {
+      generic: [
+        'منشور LinkedIn عن إحصائية مهمة في مجالك',
+        'دراسة حالة قصيرة لعميل سابق (بإذنه)',
+        'استطلاع لجمهورك: أكبر تحدٍ تواجهونه هذا الشهر؟'
+      ],
+      religious: [
+        'منشور تهنئة مهني بهوية الشركة',
+        'مقالة قصيرة: كيف يستعد القطاع للموسم',
+        'webinar مجاني بمناسبة الموسم'
+      ],
+      national: [
+        'منشور احتفال بإنجازات الشركة بمناسبة اليوم الوطني',
+        'خصم خاص على الاستشارات لمدة محدودة',
+        'مقالة: مساهمة قطاعك في رؤية 2030'
+      ],
+      seasonal: [
+        'تقرير ربعي لجمهورك عن اتجاهات الموسم',
+        'webinar مجاني عن موضوع موسمي',
+        'pack خدمات موسمي بأسعار خاصة'
+      ]
+    },
+    realestate: {
+      generic: [
+        'جولة فيديو 60 ثانية لأحدث عقار',
+        'نصيحة استثمارية أسبوعية',
+        'منشور قبل/بعد لتجديد عقار'
+      ],
+      religious: [
+        'عروض خاصة للموسم على عقارات/سيارات/رحلات',
+        'منشور تهنئة بهوية احترافية',
+        'صفقات حصرية بمناسبة الموسم'
+      ],
+      national: [
+        'باقات سياحية داخلية بمناسبة اليوم الوطني',
+        'عقارات/سيارات بألوان أو طابع وطني',
+        'خصم خاص للسعوديين بهوية اليوم الوطني'
+      ],
+      seasonal: [
+        'وجهات سياحية موسمية + باقات',
+        'عقارات صيفية/شتوية مميزة',
+        'نصائح للاستثمار في الموسم'
+      ]
+    },
+    education: {
+      generic: [
+        'نصيحة تعليمية سريعة بفيديو 30 ثانية',
+        'استطلاع: ما الموضوع التالي اللي تبون تتعلمون؟',
+        'قصة نجاح طالب من برنامج سابق'
+      ],
+      religious: [
+        'دورة خاصة بمناسبة الموسم + خصم',
+        'سلسلة محتوى تعليمي مرتبط بالموسم',
+        'webinar مجاني بمناسبة الموسم'
+      ],
+      national: [
+        'دورة عن موضوع وطني (التاريخ، الاقتصاد)',
+        'منحة تعليمية بمناسبة اليوم الوطني',
+        'محتوى عن دور التعليم في الرؤية 2030'
+      ],
+      seasonal: [
+        'برامج صيفية للأطفال / كورسات شتوية',
+        'سلسلة تعليمية موسمية مجانية',
+        'خصم على البرامج الموسمية'
+      ]
+    },
+    other: {
+      generic: [
+        'شارك قصة نجاح أو لحظة فخر من عملك',
+        'استطلاع رأي بسيط لجمهورك',
+        'منشور خلف الكواليس عن يومك العملي'
+      ],
+      religious: [
+        'منشور تهنئة بهوية مميزة',
+        'عرض خاص بمناسبة الموسم',
+        'محتوى مرتبط بروح المناسبة'
+      ],
+      national: [
+        'منشور احتفالي باليوم الوطني',
+        'خصم وطني محدود الوقت',
+        'مساهمتك في الاحتفال'
+      ],
+      seasonal: [
+        'منتج/خدمة موسمية مميزة',
+        'محتوى مرتبط بالموسم',
+        'عرض موسمي خاص'
+      ]
+    }
+  },
+  en: {
+    food: {
+      generic: ['Plate of the day in natural light, posted before lunch', 'Quick story: a new recipe you tried this week', 'Poll: which coffee flavor should we add next?'],
+      religious: ['Special seasonal dish + 20% for in-store visitors', 'Short video preparing a traditional dessert', 'Thank-you post + discount code for the season'],
+      national: ['Menu inspired by the national holiday', 'Decorate your space in flag colors + before/after photos', 'One-day flash deal on a "national" dish'],
+      seasonal: ['Seasonal content: cold summer drink / warm winter soup', 'Limited-time menu item for this season only', 'Weekly content series about seasonal products']
+    },
+    ecommerce: {
+      generic: ['Professional flatlay + 10% off for followers', 'Unboxing video for new orders', 'Poll: which color do you prefer for the new collection?'],
+      religious: ['Curated gift collection + free shipping', 'Carousel: ways to style the product for the occasion', 'Exclusive discount code for the season'],
+      national: ['Product collection in national colors', 'Short video: national gift ideas', '24-hour exclusive sale'],
+      seasonal: ['Exclusive seasonal collection', 'Seasonal styling guide', 'Buy 2 get 1 free for the season']
+    },
+    beauty: {
+      generic: ['Real before/after (with client permission)', 'Quick care tip from your specialist', 'Video explaining your newest technology'],
+      religious: ['"Get ready for the occasion" package at a special price', 'Skincare tips during fasting/season', 'Early booking offer before the occasion'],
+      national: ['Special celebratory package in national colors', '24-hour discount on selected sessions', 'Thank-you post to clients for the season'],
+      seasonal: ['Seasonal treatments: sun protection / winter hydration', 'Daily care tips series for the season', 'Discounted seasonal package']
+    },
+    professional: {
+      generic: ['LinkedIn post about an important industry stat', 'Short case study (with client permission)', 'Audience poll: biggest challenge this month?'],
+      religious: ['Professional branded greeting post', 'Short article: how the industry prepares for the season', 'Free webinar for the season'],
+      national: ['Celebrate company achievements for National Day', 'Limited-time discount on consultations', 'Article: your sector\'s contribution to Vision 2030'],
+      seasonal: ['Quarterly trend report for your audience', 'Free seasonal webinar', 'Seasonal service pack at special prices']
+    },
+    realestate: {
+      generic: ['60-second video tour of latest property', 'Weekly investment tip', 'Before/after renovation post'],
+      religious: ['Special seasonal offers on properties/cars/trips', 'Professional branded greeting', 'Exclusive deals for the season'],
+      national: ['Domestic tourism packages for National Day', 'Properties/cars with national theme', 'Special discount for Saudis on National Day'],
+      seasonal: ['Seasonal destinations + packages', 'Distinctive seasonal properties', 'Investment tips for the season']
+    },
+    education: {
+      generic: ['Quick educational tip in a 30-second video', 'Poll: what topic do you want to learn next?', 'Student success story from a past program'],
+      religious: ['Special course for the season + discount', 'Educational content series tied to the season', 'Free webinar for the season'],
+      national: ['Course about national topic (history, economy)', 'Educational scholarship for National Day', 'Content about education\'s role in Vision 2030'],
+      seasonal: ['Summer programs for kids / winter courses', 'Free seasonal educational series', 'Discount on seasonal programs']
+    },
+    other: {
+      generic: ['Share a success story or proud moment', 'Simple audience poll', 'Behind-the-scenes post about your workday'],
+      religious: ['Branded greeting post', 'Special offer for the season', 'Content matching the spirit of the occasion'],
+      national: ['Celebratory post for National Day', 'Limited-time national discount', 'Your contribution to the celebration'],
+      seasonal: ['Distinctive seasonal product/service', 'Content tied to the season', 'Special seasonal offer']
+    }
+  }
+};
+
+// Pick today's tip deterministically — same day = same tip across reloads
+function getTodayTip() {
+  var tips = lang === 'ar' ? DAILY_TIPS_AR : DAILY_TIPS_EN;
+  var dayOfYear = Math.floor((Date.now() - new Date(new Date().getFullYear(), 0, 0)) / 86400000);
+  return tips[dayOfYear % tips.length];
+}
+
+// Pick 3 ideas based on business type and next event type
+function getIdeasForEvent(ev) {
+  var bizCode = userData.bizType || 'other';
+  var langCode = lang === 'ar' ? 'ar' : 'en';
+  var bank = (IDEA_LIBRARY[langCode] && IDEA_LIBRARY[langCode][bizCode]) || IDEA_LIBRARY.en.other;
+  var eventType = ev && ev.type ? ev.type : 'generic';
+  // Map event.type to the keys we have (religious/national/seasonal/generic)
+  var key = 'generic';
+  if (eventType === 'religious') key = 'religious';
+  else if (eventType === 'national') key = 'national';
+  else if (eventType === 'seasonal') key = 'seasonal';
+  return (bank[key] || bank.generic).slice(0, 3);
+}
+
+// Personalized morning greeting
+function getDailyGreeting() {
+  var hour = new Date().getHours();
+  var name = userData.name ? userData.name.split(' ')[0] : '';
+  if (lang === 'ar') {
+    var g = hour < 12 ? 'صباح الخير' : (hour < 17 ? 'مساء الخير' : 'مساء النور');
+    return name ? g + '، ' + name : g;
+  }
+  var ge = hour < 12 ? 'Good morning' : (hour < 17 ? 'Good afternoon' : 'Good evening');
+  return name ? ge + ', ' + name : ge;
+}
+
+// Render the Daily Brief block on Home
+function renderDailyBrief() {
+  // Greeting
+  var greetEl = document.getElementById('briefGreeting');
+  if (greetEl) greetEl.textContent = getDailyGreeting();
+  // Today's tip
+  var tipEl = document.getElementById('briefTipText');
+  if (tipEl) tipEl.textContent = getTodayTip();
+  // Pick the next upcoming event (skip past)
+  var evs = allEvs().filter(function(e) { return !isEventPast(e); });
+  var nextEv = evs[0];
+  var nameEl = document.getElementById('briefEventName');
+  var ideasEl = document.getElementById('briefIdeasList');
+  if (!nextEv) {
+    if (nameEl) nameEl.textContent = (lang === 'ar' ? 'الأيام القادمة' : 'UPCOMING DAYS').toUpperCase();
+    if (ideasEl) ideasEl.innerHTML = '';
+    return;
+  }
+  if (nameEl) {
+    var evName = translateEventName(nextEv.name) || nextEv.name;
+    var daysTxt = nextEv.days === 0
+      ? (lang === 'ar' ? '(اليوم)' : '(today)')
+      : '(' + nextEv.days + ' ' + (lang === 'ar' ? 'يوم' : 'days') + ')';
+    nameEl.textContent = evName.toUpperCase() + ' ' + daysTxt;
+  }
+  if (ideasEl) {
+    ideasEl.innerHTML = '';
+    var ideas = getIdeasForEvent(nextEv);
+    ideas.forEach(function(idea, i) {
+      var row = document.createElement('div');
+      row.style.cssText = 'background:rgba(255,255,255,.7);border-radius:12px;padding:11px 13px;display:flex;align-items:flex-start;gap:10px;cursor:pointer';
+      row.innerHTML =
+        '<div style="width:22px;height:22px;border-radius:7px;background:var(--gold-l);color:var(--gold);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:12px;font-weight:700">' + (i + 1) + '</div>'
+        + '<div style="flex:1;font-size:13px;color:var(--t1);line-height:1.5">' + idea + '</div>'
+        + '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--t3)" stroke-width="2" stroke-linecap="round" style="flex-shrink:0;margin-top:4px"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>';
+      row.addEventListener('click', function() { copyIdea(idea); });
+      ideasEl.appendChild(row);
+    });
+  }
+}
+
+// Copy an idea to clipboard for quick pasting into Instagram/Twitter/etc.
+function copyIdea(text) {
+  try {
+    navigator.clipboard.writeText(text).then(function() {
+      toast('✓ ' + (lang === 'ar' ? 'تم النسخ' : 'Copied'));
+    }).catch(function() {
+      toast(lang === 'ar' ? 'تعذر النسخ' : 'Could not copy');
+    });
+  } catch(e) {
+    toast(lang === 'ar' ? 'تعذر النسخ' : 'Could not copy');
+  }
+}
+
+// Placeholder — will call Claude API in a future step
+function generateMoreIdeas() {
+  toast(lang === 'ar' ? '🤖 ميزة AI قادمة قريباً' : '🤖 AI generation coming soon');
+}
+
 function updateHero() {
+  // Always refresh the brief — it depends on the same data
+  try { renderDailyBrief(); } catch(e) {}
   var evs = allEvs().filter(function(e) { return !isEventPast(e); });
   if (!evs.length) return;
   var ev = evs[0];
